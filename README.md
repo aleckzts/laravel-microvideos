@@ -40,3 +40,14 @@ php artisan tinker
 
 php artisan migrate:refresh --seed
 ```
+
+```
+#bash do app
+php artisan make:model Models/Genre --all
+php artisan make:seeder GenresTableSeeder
+php artisan migrate --seed
+php artisan tinker
+\App\Models\Category::all()
+
+php artisan migrate:refresh --seed
+```
