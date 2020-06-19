@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class GenreController extends Controller
 {
+    private $rules = [
+        'name' => 'required|max:255',
+        'is_active' => 'boolean'
+    ];
+
     public function index()
     {
         return Genre::all();
@@ -15,10 +20,7 @@ class GenreController extends Controller
 
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'name' => 'required|max:255',
-            'is_active' => 'boolean'
-        ]);
+        $this->validate($request, $this->rules);
         return Genre::create($request->all());
     }
 
@@ -29,8 +31,9 @@ class GenreController extends Controller
 
     public function update(Request $request, Genre $genre)
     {
-        //
-    }
+        $this->validate($request, $this->rules);
+        $category->update($request->all());
+        return $category;    }
 
     public function destroy(Genre $genre)
     {
