@@ -32,11 +32,11 @@ class GenreController extends Controller
     public function update(Request $request, Genre $genre)
     {
         $this->validate($request, $this->rules);
-        $category->update($request->all());
-        return $category;    }
+        $genre->update($request->all());
+        return $genre;    }
 
     public function destroy(Genre $genre)
     {
-        //
+        $genre->delete();
     }
 }
