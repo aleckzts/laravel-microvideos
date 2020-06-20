@@ -17,6 +17,7 @@ class CreateGenresTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
