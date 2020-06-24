@@ -27,3 +27,27 @@ $ docker-compose up
 ```
 http://localhost:8000
 ```
+
+- Alterações
+
+```
+#bash do app
+php artisan make:model Models/Category --all
+php artisan make:seeder CategoriesTableSeeder
+php artisan migrate --seed
+php artisan tinker
+\App\Models\Category::all()
+
+php artisan migrate:refresh --seed
+```
+
+```
+#bash do app
+php artisan make:model Models/Genre --all
+php artisan make:seeder GenresTableSeeder
+php artisan migrate --seed
+php artisan tinker
+\App\Models\Category::all()
+
+php artisan migrate:refresh --seed
+```
