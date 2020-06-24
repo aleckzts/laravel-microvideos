@@ -12,5 +12,5 @@ trait Uuid
       static::creating(function($obj){
           $obj->id = RamsayUuid::uuid4();
       });
-  } 
+  }
 }
