@@ -2,11 +2,11 @@ steps:
 
 - id: "Rodando docker-compose"
   name: "gcr.io/$PROJECT_ID/docker-compose:1.25.5"
-  args: ['-f','docker-compose.yaml','up','-d']
+  args: ['-f','docker-compose.prod.yaml','up','-d']
 
 - id: "Rodando composer"
   name: "gcr.io/cloud-builders/docker"
-  args: ['exec','-t','micro-videos-app','composer','install','--no-progress','--dev']
+  args: ['exec','-t','micro-videos-app','composer','install']
 
 - id: "Copiando .env"
   name: "gcr.io/cloud-builders/docker"
