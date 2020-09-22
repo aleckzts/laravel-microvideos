@@ -25,7 +25,10 @@ class CategoryControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->category = factory(Category::class)->create();
+        $this->category = factory(Category::class)->create([
+            'description' => 'description test',
+            'is_active' => false
+        ]);
     }
 
     public function testIndex()
@@ -87,11 +90,6 @@ class CategoryControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $this->category = factory(Category::class)->create([
-            'description' => 'description test',
-            'is_active' => false
-        ]);
-
         $data = [
             'name' => 'test',
             'description' => 'description update test',
