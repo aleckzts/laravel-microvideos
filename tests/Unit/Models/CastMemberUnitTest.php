@@ -2,14 +2,14 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\Category;
+use App\Models\CastMember;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class CategoryUnitTest extends TestCase
+class CastMemberUnitTest extends TestCase
 {
     /**
      * A basic unit test example.
@@ -18,29 +18,29 @@ class CategoryUnitTest extends TestCase
      */
     public function testFillables()
     {
-        $fillable = ['name', 'description', 'is_active'];
-        $category = new Category();
-        $this->assertEquals($fillable, $category->getFillable());
+        $fillable = ['name', 'type'];
+        $castMember = new CastMember();
+        $this->assertEquals($fillable, $castMember->getFillable());
     }
 
     public function testCasts()
     {
         $casts = [
             'id' => 'string',
-            'is_active' => 'boolean'
+            'type' => 'integer'
         ];
-        $category = new Category();
-        $this->assertEquals($casts, $category->getCasts());
+        $castMember = new CastMember();
+        $this->assertEquals($casts, $castMember->getCasts());
     }
 
     public function testDates()
     {
         $dates = ['deleted_at', 'created_at', 'updated_at'];
-        $category = new Category();
+        $castMember = new CastMember();
         foreach ($dates as $date) {
-            $this->assertContains($date, $category->getDates());
+            $this->assertContains($date, $castMember->getDates());
         }
-        $this->assertCount(count($dates), $category->getDates());
+        $this->assertCount(count($dates), $castMember->getDates());
     }
 
     public function testIfUseTraits()
@@ -48,13 +48,13 @@ class CategoryUnitTest extends TestCase
         $traits = [
             SoftDeletes::class, Uuid::class
         ];
-        $categoryTraits = array_keys(class_uses(Category::class));
-        $this->assertEquals($traits, $categoryTraits);
+        $castMemberTraits = array_keys(class_uses(CastMember::class));
+        $this->assertEquals($traits, $castMemberTraits);
     }
 
     public function testIncrementing()
     {
-        $category = new Category();
-        $this->assertFalse($category->incrementing);
+        $castMember = new CastMember();
+        $this->assertFalse($castMember->incrementing);
     }
 }
