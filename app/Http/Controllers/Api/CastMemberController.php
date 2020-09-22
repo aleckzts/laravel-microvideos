@@ -3,17 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BasicCrudController;
-use App\Models\Genre;
+use App\Http\Controllers\Controller;
+use App\Models\CastMember;
+use Illuminate\Http\Request;
 
-class GenreController extends BasicCrudController
+class CastMemberController extends BasicCrudController
 {
     protected function model()
     {
-        return Genre::class;
+        return CastMember::class;
     }
 
     private $rules = [
         'name' => 'required|max:255',
+        'description' => 'nullable',
         'is_active' => 'boolean'
     ];
 
