@@ -4,7 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 
-class GenreHasCategoriesRule implements Rule
+class GenresHasCategoriesRule implements Rule
 {
     /**
      * Create a new rule instance.
