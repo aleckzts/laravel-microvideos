@@ -35,7 +35,7 @@ class VideoControllerTest extends TestCase
     {
         parent::setUp();
         $this->video = factory(Video::class)->create([
-            'opened' => false
+            'opened' => false,
         ]);
         $this->category = factory(Category::class)->create();
         $this->genre = factory(Genre::class)->create();

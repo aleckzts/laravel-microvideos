@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BasicCrudController;
 use App\Http\Controllers\Controller;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use App\Rules\GenreHasCategoriesRule;
 
 class VideoController extends BasicCrudController
 {
@@ -27,13 +28,9 @@ class VideoController extends BasicCrudController
 
     public function store(Request $request)
     {
+        $this->addRuleIfGenreHasCategories($request);
         $validatedData = $this->validate($request, $this->rulesStore());
-        $self = $this;
-        $createdObj = \DB::transaction(function () use ($request, $validatedData, $self) {
-            $createdObj = $this->model()::create($validatedData);
-            $self->handleRelations($createdObj, $request);
-            return $createdObj;
-        });
+        $createdObj = $this->model()::create($validatedData);
         $createdObj->refresh();
         return $createdObj;
     }
@@ -41,19 +38,19 @@ class VideoController extends BasicCrudController
     public function update(Request $request, $id)
     {
         $updatedObj = $this->findOrFail($id);
+        $this->addRuleIfGenreHasCategories($request);
         $validatedData = $this->validate($request, $this->rulesUpdate());
-        $self = $this;
-        \DB::transaction(function () use ($request, $validatedData, $self, $updatedObj) {
-            $updatedObj->update($validatedData);
-            $self->handleRelations($updatedObj, $request);
-        });
+        $updatedObj->update($validatedData);
         return $updatedObj;
     }
 
-    protected function handleRelations($video, Request $request)
+    protected function addRuleIfGenreHasCategories(Request $request)
     {
-        $video->categories()->sync($request->get('categories_id'));
-        $video->genres()->sync($request->get('genres_id'));
+        $categoriesId = $request->get('categories_id');
+        $categoriesId = is_array($categoriesId) ? $categoriesId : [];
+        $this->rules['genres_id'][] = new GenreHasCategoriesRule(
+            $categoriesId
+        );
     }
 
     protected function model()
