@@ -13,4 +13,6 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 .docker/dbdata
+
 storage/credentials
+!storage/credentials/google/.gitkeep
