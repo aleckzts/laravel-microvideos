@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Exception;
+namespace Tests\Exceptions;
 
 class TestException extends \Exception
 {
