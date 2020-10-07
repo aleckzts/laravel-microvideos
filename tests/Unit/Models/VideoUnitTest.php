@@ -4,6 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Video;
 use App\Models\Traits\Uuid;
+use App\Models\Traits\UploadFiles;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -18,7 +19,18 @@ class VideoUnitTest extends TestCase
      */
     public function testFillables()
     {
-        $fillable = ['title', 'description', 'year_launched', 'opened', 'rating', 'duration'];
+        $fillable = [
+            'title',
+            'description',
+            'year_launched',
+            'opened',
+            'rating',
+            'duration',
+            'video_file',
+            'thumb_file',
+            'banner_file',
+            'trailer_file',
+        ];
         $video = new Video();
         $this->assertEquals($fillable, $video->getFillable());
     }
@@ -48,7 +60,7 @@ class VideoUnitTest extends TestCase
     public function testIfUseTraits()
     {
         $traits = [
-            SoftDeletes::class, Uuid::class
+            SoftDeletes::class, Uuid::class, UploadFiles::class
         ];
         $videoTraits = array_keys(class_uses(Video::class));
         $this->assertEquals($traits, $videoTraits);

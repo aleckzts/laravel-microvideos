@@ -13,7 +13,7 @@ use Tests\Traits\TestValidations;
 use Tests\Traits\TestSaves;
 use App\Http\Controllers\Api\GenreController;
 use Illuminate\Http\Request;
-use Tests\Exception\TestException;
+use Tests\Exceptions\TestException;
 
 class GenreControllerTest extends TestCase
 {
