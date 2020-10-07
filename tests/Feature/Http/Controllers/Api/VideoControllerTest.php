@@ -193,6 +193,7 @@ class VideoControllerTest extends TestCase
 
     public function testStoreWithFiles()
     {
+        UploadedFile::fake()->image("image.jpg");
         \Storage::fake();
         $files = $this->getFiles();
 
