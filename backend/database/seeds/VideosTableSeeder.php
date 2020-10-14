@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
-class VideoSeeder extends Seeder
+class VideosTableSeeder extends Seeder
 {
 
     private $allGenres;
@@ -49,14 +49,11 @@ class VideoSeeder extends Seeder
     {
         $subGenres = $this->allGenres->random(5)->load('categories');
         $categoriesId = [];
-
         foreach ($subGenres as $genre) {
             array_push($categoriesId, ...$genre->categories->pluck('id')->toArray());
         }
-
         $categoriesId = array_unique($categoriesId);
         $genresId = $subGenres->pluck('id')->toArray();
-
         $this->relations['categories_id'] = $categoriesId;
         $this->relations['genres_id'] = $genresId;
     }

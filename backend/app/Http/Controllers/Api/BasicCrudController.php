@@ -4,18 +4,33 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 abstract class BasicCrudController extends Controller
 {
+    protected $paginationSize = 15;
+
     protected abstract function model();
 
     protected abstract function rulesStore();
 
     protected abstract function rulesUpdate();
 
+    protected abstract function resource();
+
+    protected abstract function resourceCollection();
+
     public function index()
     {
-        return $this->model()::all();
+        $data = !$this->paginationSize ? $this->model()::all() : $this->model()::paginate($this->paginationSize);
+
+        $resourceCollectionClass = $this->resourceCollection();
+
+        $refClass = new \ReflectionClass($this->resourceCollection());
+
+        return $refClass->isSubclassOf(ResourceCollection::class)
+            ? new $resourceCollectionClass($data)
+            : $resourceCollectionClass::collection($data);
     }
 
     public function store(Request $request)
@@ -23,7 +38,9 @@ abstract class BasicCrudController extends Controller
         $validatedData = $this->validate($request, $this->rulesStore());
         $createdObj = $this->model()::create($validatedData);
         $createdObj->refresh();
-        return $createdObj;
+        $resource = $this->resource();
+
+        return new $resource($createdObj);
     }
 
     protected function findOrFail($id)
@@ -36,7 +53,8 @@ abstract class BasicCrudController extends Controller
     public function show($id)
     {
         $findObj = $this->findOrFail($id);
-        return $findObj;
+        $resource = $this->resource();
+        return new $resource($findObj);
     }
 
     public function update(Request $request, $id)
@@ -44,7 +62,10 @@ abstract class BasicCrudController extends Controller
         $updatedObj = $this->findOrFail($id);
         $validatedData = $this->validate($request, $this->rulesUpdate());
         $updatedObj->update($validatedData);
-        return $updatedObj;
+
+        $resource = $this->resource();
+
+        return new $resource($updatedObj);
     }
 
     public function destroy($id)

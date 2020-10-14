@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Traits;
@@ -8,15 +9,13 @@ use Illuminate\Foundation\Testing\TestResponse;
 trait TestValidations
 {
     protected abstract function model();
-
     protected abstract function routeStore();
-
     protected abstract function routeUpdate();
 
     protected function assertInvalidationInStoreAction(
         array $data,
         string $rule,
-        $ruleParams = []
+        array $ruleParams = []
     ) {
         $response = $this->json('POST', $this->routeStore(), $data);
         $fields = array_keys($data);
@@ -26,7 +25,7 @@ trait TestValidations
     protected function assertInvalidationInUpdateAction(
         array $data,
         string $rule,
-        $ruleParams = []
+        array $ruleParams = []
     ) {
         $response = $this->json('PUT', $this->routeUpdate(), $data);
         $fields = array_keys($data);
@@ -44,11 +43,10 @@ trait TestValidations
             ->assertJsonValidationErrors($fields);
 
         foreach ($fields as $field) {
-            $fieldName = str_replace('_',' ',$field);
+            $fieldName = str_replace('_', ' ', $field);
             $response->assertJsonFragment([
-                \Lang::get("validation.{$rule}", ['attribute' => $fieldName] + $ruleParams)
+                __("validation.{$rule}", ['attribute' => $fieldName] + $ruleParams)
             ]);
         }
-
     }
 }
