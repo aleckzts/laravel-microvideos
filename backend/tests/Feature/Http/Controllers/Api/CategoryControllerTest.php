@@ -10,10 +10,12 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\TestValidations;
 use Tests\Traits\TestSaves;
+use Tests\Traits\TestResources;
+use App\Http\Resources\CategoryResource;
 
 class CategoryControllerTest extends TestCase
 {
-    use DatabaseMigrations, TestValidations, TestSaves;
+    use DatabaseMigrations, TestValidations, TestSaves, TestResources;
     /**
      * A basic feature test example.
      *
@@ -22,13 +24,20 @@ class CategoryControllerTest extends TestCase
 
     private $category;
 
+    private $serializedFields = [
+        'id',
+        'name',
+        'description',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->category = factory(Category::class)->create([
-            'description' => 'description test',
-            'is_active' => false
-        ]);
+        $this->category = factory(Category::class)->create();
     }
 
     public function testIndex()
@@ -37,7 +46,19 @@ class CategoryControllerTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertJSON([$this->category->toArray()]);
+            ->assertJson(([
+                'meta' => ['per_page' => 15]
+            ]))
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => $this->serializedFields
+                ],
+                'links' => [],
+                'meta' => [],
+            ]);
+
+        $resource = CategoryResource::collection(collect([$this->category]));
+        $this->assertResource($response, $resource);
     }
 
     public function testShow()
@@ -46,7 +67,12 @@ class CategoryControllerTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertJSON($this->category->toArray());
+            ->assertJsonStructure([
+                'data' => $this->serializedFields
+            ]);
+        $id = $response->json('data.id');
+        $resource = new CategoryResource(Category::find($id));
+        $this->assertResource($response, $resource);
     }
 
     public function testInvalidationData()
@@ -54,18 +80,19 @@ class CategoryControllerTest extends TestCase
         $data = [
             'name' => ''
         ];
+
         $this->assertInvalidationInStoreAction($data, 'required');
         $this->assertInvalidationInUpdateAction($data, 'required');
 
         $data = [
-            'name' => str_repeat('a', 256)
+            'name' => str_repeat('a', 256),
         ];
+
         $this->assertInvalidationInStoreAction($data, 'max.string', ['max' => 255]);
         $this->assertInvalidationInUpdateAction($data, 'max.string', ['max' => 255]);
 
-        $data = [
-            'is_active' => 'a'
-        ];
+        $data = ['is_active' => 'a'];
+
         $this->assertInvalidationInStoreAction($data, 'boolean');
         $this->assertInvalidationInUpdateAction($data, 'boolean');
     }
@@ -75,62 +102,86 @@ class CategoryControllerTest extends TestCase
         $data = [
             'name' => 'test'
         ];
+
         $response = $this->assertStore($data, $data + ['description' => null, 'is_active' => true, 'deleted_at' => null]);
         $response->assertJsonStructure([
-            'created_at', 'updated_at'
+            'data' => $this->serializedFields
         ]);
-
         $data = [
             'name' => 'test',
-            'is_active' => false,
-            'description' => 'description test'
+            'description' => 'description',
+            'is_active' => false
         ];
-        $this->assertStore($data, $data + ['description' => 'description test', 'is_active' => false]);
+
+        $this->assertStore($data, $data + ['description' => 'description', 'is_active' => false]);
+
+        $id = $response->json('data.id');
+        $resource = new CategoryResource(Category::find($id));
+        $this->assertResource($response, $resource);
     }
 
     public function testUpdate()
     {
+        $this->category = factory(Category::class)->create([
+            'description' => 'description',
+            'is_active' => false
+        ]);
+
         $data = [
             'name' => 'test',
-            'description' => 'description update test',
+            'description' => 'test',
             'is_active' => true
         ];
+
         $response = $this->assertUpdate($data, $data + ['deleted_at' => null]);
+
         $response->assertJsonStructure([
-            'created_at', 'updated_at'
+            'data' => $this->serializedFields
         ]);
+
+        $id = $response->json('data.id');
+        $resource = new CategoryResource(Category::find($id));
+        $this->assertResource($response, $resource);
 
         $data = [
             'name' => 'test',
             'description' => '',
         ];
+
         $this->assertUpdate($data, array_merge($data, ['description' => null]));
 
         $data['description'] = 'test';
+
         $this->assertUpdate($data, array_merge($data, ['description' => 'test']));
 
         $data['description'] = null;
+
         $this->assertUpdate($data, array_merge($data, ['description' => null]));
     }
 
     public function testDestroy()
     {
+
         $response = $this->json('DELETE', route('categories.destroy', ['category' => $this->category->id]));
+
         $response->assertStatus(204);
+
         $this->assertNull(Category::find($this->category->id));
         $this->assertNotNull(Category::withTrashed()->find($this->category->id));
     }
 
-    protected function routeStore() {
+    protected function routeStore()
+    {
         return route('categories.store');
     }
 
-    protected function routeUpdate() {
+    protected function routeUpdate()
+    {
         return route('categories.update', ['category' => $this->category->id]);
     }
 
-    protected function model() {
+    protected function model()
+    {
         return Category::class;
     }
-
 }

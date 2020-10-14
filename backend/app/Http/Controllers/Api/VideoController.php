@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BasicCrudController;
-use App\Http\Controllers\Controller;
 use App\Models\Video;
-use Illuminate\Http\Request;
 use App\Rules\GenresHasCategoriesRule;
+use App\Http\Resources\VideoResource;
+use Illuminate\Http\Request;
 
 class VideoController extends BasicCrudController
 {
@@ -32,23 +32,29 @@ class VideoController extends BasicCrudController
 
     public function store(Request $request)
     {
-        // $this->addRuleIfGenresHasCategories($request);
+        // $this->addruleIfGenreHasCategories($request);
         $validatedData = $this->validate($request, $this->rulesStore());
         $createdObj = $this->model()::create($validatedData);
         $createdObj->refresh();
-        return $createdObj;
+
+        $resource = $this->resource();
+
+        return new $resource($createdObj);
     }
 
     public function update(Request $request, $id)
     {
         $updatedObj = $this->findOrFail($id);
-        // $this->addRuleIfGenresHasCategories($request);
+        // $this->addruleIfGenreHasCategories($request);
         $validatedData = $this->validate($request, $this->rulesUpdate());
         $updatedObj->update($validatedData);
-        return $updatedObj;
+
+        $resource = $this->resource();
+
+        return new $resource($updatedObj);
     }
 
-    protected function addRuleIfGenresHasCategories(Request $request)
+    protected function addruleIfGenreHasCategories(Request $request)
     {
         $categoriesId = $request->get('categories_id');
         $categoriesId = is_array($categoriesId) ? $categoriesId : [];
@@ -70,5 +76,15 @@ class VideoController extends BasicCrudController
     protected function rulesUpdate()
     {
         return $this->rules;
+    }
+
+    protected function resource()
+    {
+        return VideoResource::class;
+    }
+
+    protected function resourceCollection()
+    {
+        return $this->resource();
     }
 }

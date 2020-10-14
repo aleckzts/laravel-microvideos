@@ -37,8 +37,15 @@ class BasicCrudControllerTest extends TestCase
     public function testIndex()
     {
         $categoryStub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
-        $result = $this->controller->index()-> toArray();
-        $this->assertEquals([$categoryStub->toArray()], $result);
+        $result = $this->controller->index();
+        $serialized = $result->response()->getData(true);
+
+        $this->assertEquals(
+            [$categoryStub->toArray()],
+            $serialized['data']
+        );
+        $this->assertArrayHasKey('meta', $serialized);
+        $this->assertArrayHasKey('links', $serialized);
     }
 
     public function testInvalidationDataInStore()
@@ -49,6 +56,7 @@ class BasicCrudControllerTest extends TestCase
             ->shouldReceive('all')
             ->once()
             ->andReturn(['name' => '']);
+
         $this->controller->store($request);
     }
 
@@ -59,11 +67,9 @@ class BasicCrudControllerTest extends TestCase
             ->once()
             ->andReturn(['name' => 'test_name', 'description' => 'test_description']);
 
-        $obj = $this->controller->store($request);
-        $this->assertEquals(
-            CategoryStub::find(1)->toArray(),
-            $obj->toArray()
-        );
+        $result = $this->controller->store($request);
+        $serialized = $result->response()->getData(true);
+        $this->assertEquals(CategoryStub::first()->toArray(), $serialized['data']);
     }
 
     public function testIfFindOrFailFetchModel()
@@ -82,19 +88,21 @@ class BasicCrudControllerTest extends TestCase
     {
         $this->expectException(ModelNotFoundException::class);
 
-        $reflectionClass = new\ ReflectionClass(BasicCrudController::class);
+        $reflectionClass = new \ReflectionClass(BasicCrudController::class);
         $reflectionMethod = $reflectionClass->getMethod('findOrFail');
         $reflectionMethod->setAccessible(true);
 
-        $reflectionMethod-> invokeArgs($this->controller, [0]);
-
+        $result = $reflectionMethod->invokeArgs($this->controller, [0]);
+        $this->assertInstanceOf(CategoryStub::class, $result);
     }
 
     public function testShow()
     {
         $categoryStub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
         $result = $this->controller->show($categoryStub->id);
-        $this->assertEquals($result->toArray(), CategoryStub::find(1)->toArray());
+
+        $serialized = $result->response()->getData(true);
+        $this->assertEquals($categoryStub->toArray(), $serialized['data']);
     }
 
     public function testUpdate()
@@ -106,14 +114,17 @@ class BasicCrudControllerTest extends TestCase
             ->once()
             ->andReturn(['name' => 'test_changed', 'description' => 'test_description_changed']);
         $result = $this->controller->update($request, $categoryStub->id);
-        $this->assertEquals($result->toArray(), CategoryStub::find(1)->toArray());
 
+        $serialized = $result->response()->getData(true);
+        $categoryStub->refresh();
+        $this->assertEquals($categoryStub->toArray(), $serialized['data']);
     }
 
     public function testDestroy()
     {
         $categoryStub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
         $response = $this->controller->destroy($categoryStub->id);
+
         $this->createTestResponse($response)
             ->assertStatus(204);
         $this->assertCount(0, CategoryStub::all());

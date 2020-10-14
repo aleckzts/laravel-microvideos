@@ -5,31 +5,36 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\BasicCrudController;
 use App\Models\Genre;
 use Illuminate\Http\Request;
+use App\Http\Resources\GenreResource;
 
 class GenreController extends BasicCrudController
 {
-    protected function model()
-    {
-        return Genre::class;
-    }
-
     private $rules = [
         'name' => 'required|max:255',
         'is_active' => 'boolean',
         'categories_id' => 'required|array|exists:categories,id,deleted_at,NULL'
     ];
 
+    protected function model()
+    {
+        return Genre::class;
+    }
+
     public function store(Request $request)
     {
         $validatedData = $this->validate($request, $this->rulesStore());
         $self = $this;
+
         $createdObj = \DB::transaction(function () use ($request, $validatedData, $self) {
             $createdObj = $this->model()::create($validatedData);
             $self->handleRelations($createdObj, $request);
             return $createdObj;
         });
         $createdObj->refresh();
-        return $createdObj;
+
+        $resource = $this->resource();
+
+        return new $resource($createdObj);
     }
 
     public function update(Request $request, $id)
@@ -41,7 +46,9 @@ class GenreController extends BasicCrudController
             $updatedObj->update($validatedData);
             $self->handleRelations($updatedObj, $request);
         });
-        return $updatedObj;
+        $resource = $this->resource();
+
+        return new $resource($updatedObj);
     }
 
     protected function handleRelations($genre, Request $request)
@@ -57,5 +64,15 @@ class GenreController extends BasicCrudController
     protected function rulesUpdate()
     {
         return $this->rules;
+    }
+
+    protected function resource()
+    {
+        return GenreResource::class;
+    }
+
+    protected function resourceCollection()
+    {
+        return $this->resource();
     }
 }

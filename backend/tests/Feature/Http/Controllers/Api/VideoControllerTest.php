@@ -16,10 +16,11 @@ use Tests\Exceptions\TestException;
 use Tests\TestCase;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
+use Tests\Traits\TestUploads;
 
 class VideoControllerTest extends TestCase
 {
-    use DatabaseMigrations, TestValidations, TestSaves;
+    use DatabaseMigrations, TestValidations, TestSaves, TestUploads;
 
     private $video;
     private $sendData;
@@ -193,7 +194,6 @@ class VideoControllerTest extends TestCase
 
     public function testStoreWithFiles()
     {
-        UploadedFile::fake()->image("image.jpg");
         \Storage::fake();
         $files = $this->getFiles();
 
@@ -211,7 +211,7 @@ class VideoControllerTest extends TestCase
                 + $files
         );
         $response->assertStatus(201);
-        $id = $response->json('id');
+        $id = $response->json('data.id');
         foreach ($files as $file) {
             \Storage::assertExists("$id/{$file->hashName()}");
         }
