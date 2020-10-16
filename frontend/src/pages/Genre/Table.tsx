@@ -6,10 +6,26 @@ import format from 'date-fns/format';
 
 import httpVideo from '../../services/api';
 
+type categoryInterface = {
+  name: string;
+};
+
 const columsDefinition: MUIDataTableColumn[] = [
   {
     name: 'name',
     label: 'Nome',
+  },
+  {
+    name: 'categories',
+    label: 'Categorias',
+    options: {
+      customBodyRender(value: unknown) {
+        const categories = value as Array<categoryInterface>;
+        return (
+          <span>{categories.map(category => category.name).join(', ')}</span>
+        );
+      },
+    },
   },
   {
     name: 'is_active',
@@ -35,11 +51,11 @@ const columsDefinition: MUIDataTableColumn[] = [
   },
 ];
 
-const CategoryTable: React.FC = () => {
+const GenreTable: React.FC = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    httpVideo('/categories').then(response => {
+    httpVideo('/genres').then(response => {
       // console.log(response.data.data);
       setData(response.data.data);
     });
@@ -54,4 +70,4 @@ const CategoryTable: React.FC = () => {
   );
 };
 
-export default CategoryTable;
+export default GenreTable;

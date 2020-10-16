@@ -6,21 +6,26 @@ import format from 'date-fns/format';
 
 import httpVideo from '../../services/api';
 
+type castMemberTypeInterface = {
+  [key: string]: string;
+};
+
+const castMemberType: castMemberTypeInterface = {
+  '1': 'Diretor',
+  '2': 'Ator',
+};
+
 const columsDefinition: MUIDataTableColumn[] = [
   {
     name: 'name',
     label: 'Nome',
   },
   {
-    name: 'is_active',
-    label: 'Ativo',
+    name: 'type',
+    label: 'Tipo',
     options: {
       customBodyRender(value) {
-        return value ? (
-          <Chip label="Sim" color="primary" />
-        ) : (
-          <Chip label="Não" color="secondary" />
-        );
+        return <Chip label={castMemberType[value]} color="primary" />;
       },
     },
   },
@@ -35,11 +40,11 @@ const columsDefinition: MUIDataTableColumn[] = [
   },
 ];
 
-const CategoryTable: React.FC = () => {
+const CastMemberTable: React.FC = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    httpVideo('/categories').then(response => {
+    httpVideo('/cast_members').then(response => {
       // console.log(response.data.data);
       setData(response.data.data);
     });
@@ -54,4 +59,4 @@ const CategoryTable: React.FC = () => {
   );
 };
 
-export default CategoryTable;
+export default CastMemberTable;
