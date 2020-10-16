@@ -4,8 +4,8 @@ import { Box } from '@material-ui/core';
 
 import './App.css';
 
-import Navbar from './components/Navbar';
 import AppRouter from './routes/AppRouter';
+import Navbar from './components/Navbar';
 import Breadcrumbs from './components/Breadcrumbs';
 
 const App: React.FC = () => {

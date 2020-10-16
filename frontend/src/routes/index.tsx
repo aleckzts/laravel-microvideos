@@ -34,14 +34,14 @@ const routes: MyRouteProps[] = [
   },
   {
     name: 'cast_members.list',
-    label: 'Listar membros',
+    label: 'Listar atores',
     path: '/cast-members',
     component: CastMemberList,
     exact: true,
   },
   {
     name: 'cast_members.create',
-    label: 'Criar membro',
+    label: 'Criar ator(a)',
     path: '/cast-members/create',
     component: CastMemberList,
     exact: true,
