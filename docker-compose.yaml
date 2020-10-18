@@ -2,6 +2,23 @@ version: '3'
 
 services:
 
+    web:
+        build: ./frontend
+        container_name: micro-videos-web
+        restart: always
+        tty: true
+        environment:
+            - NODE_ENV=development
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        networks:
+            - app-network
+        depends_on:
+            - app
+
     app:
         build: ./backend
         container_name: micro-videos-app
