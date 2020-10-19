@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Button,
-  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
   makeStyles,
+  Radio,
+  RadioGroup,
   TextField,
   Theme,
 } from '@material-ui/core';
 import { ButtonProps } from '@material-ui/core/Button/Button';
 import { useForm } from 'react-hook-form';
+
 import httpVideo from '../../services/api';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -19,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const CategoryForm: React.FC = () => {
+const CastMemberForm: React.FC = () => {
   const classes = useStyles();
 
   const buttonProps: ButtonProps = {
@@ -27,15 +32,15 @@ const CategoryForm: React.FC = () => {
     variant: 'outlined',
   };
 
-  const { register, handleSubmit, getValues } = useForm({
-    defaultValues: {
-      is_active: true,
-    },
-  });
+  const { register, handleSubmit, getValues, setValue } = useForm();
+
+  useEffect(() => {
+    register({ name: 'type' });
+  }, [register]);
 
   function onSubmit(formData: any): void {
     httpVideo
-      .post('/categories', formData)
+      .post('/cast_members', formData)
       .then(response => console.log(response.data));
   }
 
@@ -48,18 +53,18 @@ const CategoryForm: React.FC = () => {
         variant="outlined"
         inputRef={register}
       />
-      <TextField
-        name="description"
-        label="Descrição"
-        multiline
-        rows="4"
-        fullWidth
-        variant="outlined"
-        margin="normal"
-        inputRef={register}
-      />
-      <Checkbox name="is_active" inputRef={register} defaultChecked />
-      Ativo?
+      <FormControl margin="normal">
+        <FormLabel component="legend">Tipo</FormLabel>
+        <RadioGroup
+          name="type"
+          onChange={event => {
+            setValue('type', parseInt(event.target.value));
+          }}
+        >
+          <FormControlLabel value="1" control={<Radio />} label="Diretor" />
+          <FormControlLabel value="2" control={<Radio />} label="Ator" />
+        </RadioGroup>
+      </FormControl>
       <Box dir="rtl">
         <Button {...buttonProps} onClick={() => onSubmit(getValues())}>
           Salvar
@@ -72,4 +77,4 @@ const CategoryForm: React.FC = () => {
   );
 };
 
-export default CategoryForm;
+export default CastMemberForm;

@@ -15,7 +15,9 @@ services:
             - app
 
     app:
-        build: ./backend
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.prod
         container_name: app
         volumes:
             - ./backend:/var/www
