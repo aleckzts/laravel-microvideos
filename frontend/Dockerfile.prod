@@ -6,6 +6,7 @@ COPY package.json ./
 COPY yarn.lock ./
 RUN yarn install
 COPY . ./
+COPY .env.example ./.env
 RUN yarn build
 
 # production environment
