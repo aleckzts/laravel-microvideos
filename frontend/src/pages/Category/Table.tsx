@@ -39,7 +39,7 @@ const CategoryTable: React.FC = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    httpVideo('/categories').then(response => {
+    httpVideo.get('/categories').then(response => {
       // console.log(response.data.data);
       setData(response.data.data);
     });

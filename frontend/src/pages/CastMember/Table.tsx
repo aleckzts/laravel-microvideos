@@ -44,7 +44,7 @@ const CastMemberTable: React.FC = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    httpVideo('/cast_members').then(response => {
+    httpVideo.get('/cast_members').then(response => {
       // console.log(response.data.data);
       setData(response.data.data);
     });
@@ -52,7 +52,7 @@ const CastMemberTable: React.FC = () => {
 
   return (
     <MUIDataTable
-      title="Listagem de Categorias"
+      title="Listagem de Membros de Elenco"
       columns={columsDefinition}
       data={data}
     />

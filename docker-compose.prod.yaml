@@ -2,8 +2,22 @@ version: '3'
 
 services:
 
+    web:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile.prod
+        container_name: web
+        ports:
+            - "80:80"
+        networks:
+            - app-network
+        depends_on:
+            - app
+
     app:
-        build: ./backend
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.prod
         container_name: app
         volumes:
             - ./backend:/var/www

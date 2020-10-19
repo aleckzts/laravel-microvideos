@@ -55,7 +55,7 @@ const GenreTable: React.FC = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    httpVideo('/genres').then(response => {
+    httpVideo.get('/genres').then(response => {
       // console.log(response.data.data);
       setData(response.data.data);
     });
@@ -63,7 +63,7 @@ const GenreTable: React.FC = () => {
 
   return (
     <MUIDataTable
-      title="Listagem de Categorias"
+      title="Listagem de Gêneros"
       columns={columsDefinition}
       data={data}
     />
