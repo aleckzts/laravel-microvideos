@@ -24,7 +24,8 @@ const CategoryForm: React.FC = () => {
 
   const buttonProps: ButtonProps = {
     className: classes.submit,
-    variant: 'outlined',
+    color: 'secondary',
+    variant: 'contained',
   };
 
   const { register, handleSubmit, getValues } = useForm({
@@ -58,7 +59,12 @@ const CategoryForm: React.FC = () => {
         margin="normal"
         inputRef={register}
       />
-      <Checkbox name="is_active" inputRef={register} defaultChecked />
+      <Checkbox
+        name="is_active"
+        color="primary"
+        inputRef={register}
+        defaultChecked
+      />
       Ativo?
       <Box dir="rtl">
         <Button {...buttonProps} onClick={() => onSubmit(getValues())}>

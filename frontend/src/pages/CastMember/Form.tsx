@@ -29,7 +29,8 @@ const CastMemberForm: React.FC = () => {
 
   const buttonProps: ButtonProps = {
     className: classes.submit,
-    variant: 'outlined',
+    color: 'secondary',
+    variant: 'contained',
   };
 
   const { register, handleSubmit, getValues, setValue } = useForm();
@@ -61,8 +62,16 @@ const CastMemberForm: React.FC = () => {
             setValue('type', parseInt(event.target.value));
           }}
         >
-          <FormControlLabel value="1" control={<Radio />} label="Diretor" />
-          <FormControlLabel value="2" control={<Radio />} label="Ator" />
+          <FormControlLabel
+            value="1"
+            control={<Radio color="primary" />}
+            label="Diretor"
+          />
+          <FormControlLabel
+            value="2"
+            control={<Radio color="primary" />}
+            label="Ator"
+          />
         </RadioGroup>
       </FormControl>
       <Box dir="rtl">

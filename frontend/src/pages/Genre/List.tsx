@@ -9,9 +9,10 @@ import GenreTable from './Table';
 const GenreList: React.FC = () => {
   return (
     <Page title="Listagem de Gêneros">
-      <Box dir="rtl">
+      <Box dir="rtl" paddingBottom={2}>
         <Fab
           title="Adicionar Gênero"
+          color="secondary"
           size="small"
           component={Link}
           to="/genres/create"

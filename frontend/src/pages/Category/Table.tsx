@@ -5,6 +5,7 @@ import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
 import httpVideo from '../../services/api';
+import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
 const columsDefinition: MUIDataTableColumn[] = [
   {
@@ -16,11 +17,7 @@ const columsDefinition: MUIDataTableColumn[] = [
     label: 'Ativo',
     options: {
       customBodyRender(value) {
-        return value ? (
-          <Chip label="Sim" color="primary" />
-        ) : (
-          <Chip label="Não" color="secondary" />
-        );
+        return value ? <BadgeYes /> : <BadgeNo />;
       },
     },
   },

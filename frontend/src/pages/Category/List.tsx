@@ -9,9 +9,10 @@ import CategoryTable from './Table';
 const CategoryList: React.FC = () => {
   return (
     <Page title="Listagem de Categorias">
-      <Box dir="rtl">
+      <Box dir="rtl" paddingBottom={2}>
         <Fab
           title="Adicionar Categoria"
+          color="secondary"
           size="small"
           component={Link}
           to="/categories/create"

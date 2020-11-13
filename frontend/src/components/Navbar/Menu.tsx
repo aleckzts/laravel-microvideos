@@ -6,6 +6,9 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 import routes, { MyRouteProps } from '../../routes';
 
+interface ListRoutesType {
+  [key: string]: string;
+}
 const Menu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
@@ -18,13 +21,16 @@ const Menu: React.FC = () => {
     setAnchorEl(null);
   };
 
-  const listRoutes = [
-    'dashboard',
-    'categories.list',
-    'cast_members.list',
-    'genres.list',
-  ];
-  const menuRoutes = routes.filter(route => listRoutes.includes(route.name));
+  const listRoutes: ListRoutesType = {
+    dashboard: 'Dashboard',
+    'categories.list': 'Categorias',
+    'cast_members.list': 'Membros de elenco',
+    'genres.list': 'Gêneros',
+  };
+
+  const menuRoutes = routes.filter(route =>
+    Object.keys(listRoutes).includes(route.name),
+  );
 
   return (
     <>
@@ -48,7 +54,7 @@ const Menu: React.FC = () => {
         transformOrigin={{ vertical: 'top', horizontal: 'center' }}
         getContentAnchorEl={null}
       >
-        {listRoutes.map((routeName, key) => {
+        {Object.keys(listRoutes).map((routeName, key) => {
           const route = menuRoutes.find(
             routeElement => routeElement.name === routeName,
           ) as MyRouteProps;
@@ -60,7 +66,7 @@ const Menu: React.FC = () => {
               to={route.path as string}
               onClick={handleClose}
             >
-              {route.label}
+              {listRoutes[routeName]}
             </MenuItem>
           );
         })}
