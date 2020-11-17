@@ -1,10 +1,18 @@
 steps:
 
-- id: "Rodando docker-compose"
+- id: "Rodando docker-compose build"
+  name: "gcr.io/$PROJECT_ID/docker-compose:1.25.5"
+  args: ['-f','docker-compose.prod.yaml','build']
+
+- id: "Rodando docker-compose up"
   name: "gcr.io/$PROJECT_ID/docker-compose:1.25.5"
   args: ['-f','docker-compose.prod.yaml','up','-d']
 
-- id: "Rodando composer"
+- id: "Rodando composer update"
+  name: "gcr.io/cloud-builders/docker"
+  args: ['exec','-t','app','composer','update']
+
+- id: "Rodando composer install"
   name: "gcr.io/cloud-builders/docker"
   args: ['exec','-t','app','composer','install']
 

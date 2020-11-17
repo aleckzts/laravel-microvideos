@@ -9,9 +9,10 @@ import CastMemberTable from './Table';
 const CastMemberList: React.FC = () => {
   return (
     <Page title="Listagem de Membros de Elenco">
-      <Box dir="rtl">
+      <Box dir="rtl" paddingBottom={2}>
         <Fab
           title="Adicionar Membro de Elenco"
+          color="secondary"
           size="small"
           component={Link}
           to="/cast-members/create"
