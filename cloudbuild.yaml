@@ -10,7 +10,7 @@ steps:
 
 - id: "Rodando composer update"
   name: "gcr.io/cloud-builders/docker"
-  args: ['exec','-t','app','composer','update']
+  args: ['exec','-t','app','composer','update','laravel/framework']
 
 - id: "Rodando composer install"
   name: "gcr.io/cloud-builders/docker"
