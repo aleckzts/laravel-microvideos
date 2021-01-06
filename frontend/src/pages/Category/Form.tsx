@@ -7,9 +7,18 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
+
 import { ButtonProps } from '@material-ui/core/Button/Button';
 import { useForm } from 'react-hook-form';
 import httpVideo from '../../services/api';
+
+import Yup from '../../yupBR';
+
+interface CategoryType {
+  name: string;
+  description?: string;
+  is_active: boolean;
+}
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,16 +37,29 @@ const CategoryForm: React.FC = () => {
     variant: 'contained',
   };
 
-  const { register, handleSubmit, getValues } = useForm({
+  const { register, handleSubmit, getValues, errors } = useForm<CategoryType>({
     defaultValues: {
+      name: '',
       is_active: true,
     },
   });
 
-  function onSubmit(formData: any): void {
-    httpVideo
-      .post('/categories', formData)
-      .then(response => console.log(response.data));
+  async function onSubmit(formData: any): Promise<void> {
+    const validationSchema = Yup.object().shape({
+      name: Yup.string().label('Nome').required(),
+    });
+
+    try {
+      await validationSchema.validate(formData, {
+        abortEarly: false,
+      });
+
+      httpVideo
+        .post('/categories', formData)
+        .then(response => console.log(response.data));
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -48,6 +70,8 @@ const CategoryForm: React.FC = () => {
         fullWidth
         variant="outlined"
         inputRef={register}
+        error={errors.name !== undefined}
+        helperText={errors.name && errors.name.message}
       />
       <TextField
         name="description"
