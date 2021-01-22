@@ -2,11 +2,11 @@ import { RouteProps } from 'react-router-dom';
 
 import Dashboard from '../pages/Dashboard';
 import CategoryList from '../pages/Category/List';
-import CategoryCreate from '../pages/Category/Create';
+import CategoryForm from '../pages/Category/PageForm';
 import CastMemberList from '../pages/CastMember/List';
-import CastMemberCreate from '../pages/CastMember/Create';
+import CastMemberForm from '../pages/CastMember/PageForm';
 import GenreList from '../pages/Genre/List';
-import GenreCreate from '../pages/Genre/Create';
+import GenreForm from '../pages/Genre/PageForm';
 
 export interface MyRouteProps extends RouteProps {
   name: string;
@@ -32,7 +32,14 @@ const routes: MyRouteProps[] = [
     name: 'categories.create',
     label: 'Criar categoria',
     path: '/categories/create',
-    component: CategoryCreate,
+    component: CategoryForm,
+    exact: true,
+  },
+  {
+    name: 'categories.edit',
+    label: 'Editar categoria',
+    path: '/categories/:id/edit',
+    component: CategoryForm,
     exact: true,
   },
   {
@@ -46,7 +53,7 @@ const routes: MyRouteProps[] = [
     name: 'cast_members.create',
     label: 'Criar membro de elenco',
     path: '/cast-members/create',
-    component: CastMemberCreate,
+    component: CastMemberForm,
     exact: true,
   },
   {
@@ -60,7 +67,7 @@ const routes: MyRouteProps[] = [
     name: 'genres.create',
     label: 'Criar gênero',
     path: '/genres/create',
-    component: GenreCreate,
+    component: GenreForm,
     exact: true,
   },
 ];
