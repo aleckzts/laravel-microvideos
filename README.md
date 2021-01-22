@@ -1,4 +1,4 @@
-* Development Stage
+# Development Stage
 
 - Clone repository
 ```sh
