@@ -16,8 +16,15 @@ RUN rm -rf /var/www/html
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+COPY . /var/www
+
+RUN composer update laravel/framework && \
+    composer install && \
+    php artisan config:cache && \
+    chmod -R 777 storage
+
 RUN ln -s public html
 
 EXPOSE 9000
 
-ENTRYPOINT ["php-fpm"]
+ENTRYPOINT ["entrypoint.sh"]
