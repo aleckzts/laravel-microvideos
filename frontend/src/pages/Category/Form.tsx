@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import { useHistory, useParams } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 import httpVideo from '../../services/api';
 
 import Yup from '../../yupBR';
@@ -44,6 +45,7 @@ const validationSchema = Yup.object().shape({
 const CategoryForm: React.FC = () => {
   const classes = useStyles();
 
+  const snackbar = useSnackbar();
   const history = useHistory();
   const { id } = useParams<PageParams>();
   const [category, setCategory] = useState<CategoryType | null>(null);
@@ -80,12 +82,22 @@ const CategoryForm: React.FC = () => {
     http
       .then(response => {
         console.log(response.data);
+        snackbar.enqueueSnackbar('Categoria salva com sucesso', {
+          variant: 'success',
+        });
+
         setTimeout(() => {
           event
             ? id
               ? history.replace(`/categories/${response.data.data.id}/edit`)
               : history.push(`/categories/${response.data.data.id}/edit`)
             : history.push('/categories');
+        });
+      })
+      .catch(error => {
+        console.log(error);
+        snackbar.enqueueSnackbar('Erro ao salvar categoria', {
+          variant: 'error',
         });
       })
       .finally(() => setLoading(false));
