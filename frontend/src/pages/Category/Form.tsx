@@ -13,7 +13,7 @@ import { ButtonProps } from '@material-ui/core/Button/Button';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import httpVideo from '../../services/api';
 
 import Yup from '../../yupBR';
@@ -44,6 +44,7 @@ const validationSchema = Yup.object().shape({
 const CategoryForm: React.FC = () => {
   const classes = useStyles();
 
+  const history = useHistory();
   const { id } = useParams<PageParams>();
   const [category, setCategory] = useState<CategoryType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -70,14 +71,23 @@ const CategoryForm: React.FC = () => {
     },
   });
 
-  async function onSubmit(formData: any): Promise<void> {
+  async function onSubmit(formData: any, event: any): Promise<void> {
     setLoading(true);
     const http = !category
       ? httpVideo.post('/categories', formData)
       : httpVideo.put(`/categories/${category.id}`, formData);
 
     http
-      .then(response => console.log(response.data))
+      .then(response => {
+        console.log(response.data);
+        setTimeout(() => {
+          event
+            ? id
+              ? history.replace(`/categories/${response.data.data.id}/edit`)
+              : history.push(`/categories/${response.data.data.id}/edit`)
+            : history.push('/categories');
+        });
+      })
       .finally(() => setLoading(false));
   }
 
@@ -138,7 +148,7 @@ const CategoryForm: React.FC = () => {
         labelPlacement="end"
       />
       <Box dir="rtl">
-        <Button {...buttonProps} onClick={() => onSubmit(getValues())}>
+        <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>
           Salvar
         </Button>
         <Button {...buttonProps} type="submit">
