@@ -18,6 +18,8 @@ import httpVideo from '../../services/api';
 
 import Yup from '../../yupBR';
 
+import { CategoryType } from '../Category/Form';
+
 export interface PageParams {
   id: string;
 }
@@ -25,7 +27,8 @@ export interface PageParams {
 export interface GenreType {
   id: string;
   name: string;
-  categories_id: string[];
+  is_active: boolean;
+  categories: CategoryType[];
 }
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -48,7 +51,7 @@ const GenreForm: React.FC = () => {
   const history = useHistory();
   const { id } = useParams<PageParams>();
   const [genre, setGenre] = useState<GenreType | null>(null);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const buttonProps: ButtonProps = {
@@ -108,7 +111,7 @@ const GenreForm: React.FC = () => {
 
   useEffect(() => {
     httpVideo
-      .get('/categories')
+      .get<{ data: CategoryType[] }>('/categories')
       .then(response => setCategories(response.data.data));
   }, []);
 
@@ -120,12 +123,14 @@ const GenreForm: React.FC = () => {
     async function getGenre(): Promise<void> {
       setLoading(true);
       try {
-        const response = await httpVideo.get(`/genres/${id}`);
+        const response = await httpVideo.get<{ data: GenreType }>(
+          `/genres/${id}`,
+        );
         setGenre(response.data.data);
         reset({
           ...response.data.data,
           categories_id: response.data.data.categories.map(
-            (category: any) => category.id,
+            category => category.id,
           ),
         });
       } catch (err) {
