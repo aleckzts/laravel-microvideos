@@ -6,6 +6,8 @@ import format from 'date-fns/format';
 
 import httpVideo from '../../services/api';
 
+import { CastMemberType } from './Form';
+
 type castMemberTypeInterface = {
   [key: string]: string;
 };
@@ -41,13 +43,21 @@ const columsDefinition: MUIDataTableColumn[] = [
 ];
 
 const CastMemberTable: React.FC = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<CastMemberType[]>([]);
 
   useEffect(() => {
-    httpVideo.get('/cast_members').then(response => {
-      // console.log(response.data.data);
-      setData(response.data.data);
-    });
+    let isCancelled = false;
+    httpVideo
+      .get<{ data: CastMemberType[] }>('/cast_members')
+      .then(response => {
+        if (!isCancelled) {
+          setData(response.data.data);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   return (

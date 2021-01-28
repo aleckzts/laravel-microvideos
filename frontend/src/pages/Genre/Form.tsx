@@ -22,7 +22,7 @@ export interface PageParams {
   id: string;
 }
 
-interface GenreType {
+export interface GenreType {
   id: string;
   name: string;
   categories_id: string[];

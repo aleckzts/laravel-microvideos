@@ -27,7 +27,7 @@ export interface PageParams {
   id: string;
 }
 
-interface CastMemberType {
+export interface CastMemberType {
   id: string;
   name: string;
   type: number;

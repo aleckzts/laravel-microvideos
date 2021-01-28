@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
-import { Chip } from '@material-ui/core';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
 import httpVideo from '../../services/api';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
+
+import { CategoryType } from './Form';
 
 const columsDefinition: MUIDataTableColumn[] = [
   {
@@ -33,13 +34,19 @@ const columsDefinition: MUIDataTableColumn[] = [
 ];
 
 const CategoryTable: React.FC = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<CategoryType[]>([]);
 
   useEffect(() => {
-    httpVideo.get('/categories').then(response => {
-      // console.log(response.data.data);
-      setData(response.data.data);
+    let isCancelled = false;
+    httpVideo.get<{ data: CategoryType[] }>('/categories').then(response => {
+      if (!isCancelled) {
+        setData(response.data.data);
+      }
     });
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   return (

@@ -23,7 +23,7 @@ export interface PageParams {
   id: string;
 }
 
-interface CategoryType {
+export interface CategoryType {
   id: string;
   name: string;
   description?: string;

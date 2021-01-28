@@ -6,6 +6,8 @@ import format from 'date-fns/format';
 
 import httpVideo from '../../services/api';
 
+import { GenreType } from './Form';
+
 type categoryInterface = {
   name: string;
 };
@@ -52,13 +54,19 @@ const columsDefinition: MUIDataTableColumn[] = [
 ];
 
 const GenreTable: React.FC = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<GenreType[]>([]);
 
   useEffect(() => {
-    httpVideo.get('/genres').then(response => {
-      // console.log(response.data.data);
-      setData(response.data.data);
+    let isCancelled = false;
+    httpVideo.get<{ data: GenreType[] }>('/genres').then(response => {
+      if (!isCancelled) {
+        setData(response.data.data);
+      }
     });
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   return (
