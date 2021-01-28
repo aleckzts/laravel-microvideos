@@ -1,11 +1,14 @@
 import React from 'react';
-import Page from '../../components/Page';
+import { useParams } from 'react-router-dom';
 
-import GenreForm from './Form';
+import Page from '../../components/Page';
+import GenreForm, { PageParams } from './Form';
 
 const GenreCreate: React.FC = () => {
+  const { id } = useParams<PageParams>();
+
   return (
-    <Page title="Criar Gênero">
+    <Page title={!id ? 'Criar Gênero' : 'Editar Gênero'}>
       <GenreForm />
     </Page>
   );

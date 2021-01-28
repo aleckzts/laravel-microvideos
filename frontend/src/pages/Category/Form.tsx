@@ -75,32 +75,31 @@ const CategoryForm: React.FC = () => {
 
   async function onSubmit(formData: any, event: any): Promise<void> {
     setLoading(true);
-    const http = !category
-      ? httpVideo.post('/categories', formData)
-      : httpVideo.put(`/categories/${category.id}`, formData);
+    try {
+      const http = !category
+        ? httpVideo.post('/categories', formData)
+        : httpVideo.put(`/categories/${category.id}`, formData);
 
-    http
-      .then(response => {
-        console.log(response.data);
-        snackbar.enqueueSnackbar('Categoria salva com sucesso', {
-          variant: 'success',
-        });
+      const response = await http;
+      snackbar.enqueueSnackbar('Categoria salva com sucesso', {
+        variant: 'success',
+      });
 
-        setTimeout(() => {
-          event
-            ? id
-              ? history.replace(`/categories/${response.data.data.id}/edit`)
-              : history.push(`/categories/${response.data.data.id}/edit`)
-            : history.push('/categories');
-        });
-      })
-      .catch(error => {
-        console.log(error);
-        snackbar.enqueueSnackbar('Erro ao salvar categoria', {
-          variant: 'error',
-        });
-      })
-      .finally(() => setLoading(false));
+      setTimeout(() => {
+        event
+          ? id
+            ? history.replace(`/categories/${response.data.data.id}/edit`)
+            : history.push(`/categories/${response.data.data.id}/edit`)
+          : history.push('/categories');
+      });
+    } catch (err) {
+      console.log(err);
+      snackbar.enqueueSnackbar('Erro ao salvar categoria', {
+        variant: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -108,18 +107,26 @@ const CategoryForm: React.FC = () => {
   }, [register]);
 
   useEffect(() => {
-    if (id) {
+    async function getCategory(): Promise<void> {
       setLoading(true);
-      httpVideo
-        .get(`/categories/${id}`)
-        .then(response => {
-          console.log(response);
-          setCategory(response.data.data);
-          reset(response.data.data);
-        })
-        .finally(() => setLoading(false));
+      try {
+        const response = await httpVideo.get(`/categories/${id}`);
+        setCategory(response.data.data);
+        reset(response.data.data);
+      } catch (err) {
+        console.log(err);
+        snackbar.enqueueSnackbar('Não foi possível carregar as informações', {
+          variant: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [reset, id]);
+
+    if (id) {
+      getCategory();
+    }
+  }, [reset, id, snackbar]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

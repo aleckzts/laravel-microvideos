@@ -1,11 +1,14 @@
 import React from 'react';
-import Page from '../../components/Page';
+import { useParams } from 'react-router-dom';
 
-import CastMemberForm from './Form';
+import Page from '../../components/Page';
+import CastMemberForm, { PageParams } from './Form';
 
 const CastMemberCreate: React.FC = () => {
+  const { id } = useParams<PageParams>();
+
   return (
-    <Page title="Criar Membro de Elenco">
+    <Page title={!id ? 'Criar Membro de Elenco' : 'Editar Membro de Elenco'}>
       <CastMemberForm />
     </Page>
   );
