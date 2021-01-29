@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  makeStyles,
-  TextField,
-  Theme,
-} from '@material-ui/core';
+import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 
-import { ButtonProps } from '@material-ui/core/Button/Button';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -18,6 +9,8 @@ import { useSnackbar } from 'notistack';
 import httpVideo from '../../services/api';
 
 import Yup from '../../yupBR';
+import SubmitActions from '../../components/SubmitActions';
+import DefaultForm from '../../components/DefaultForm';
 
 export interface PageParams {
   id: string;
@@ -30,33 +23,16 @@ export interface CategoryType {
   is_active: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) => {
-  return {
-    submit: {
-      margin: theme.spacing(1),
-    },
-  };
-});
-
 const validationSchema = Yup.object().shape({
   name: Yup.string().label('Nome').required().max(255),
 });
 
 const CategoryForm: React.FC = () => {
-  const classes = useStyles();
-
   const snackbar = useSnackbar();
   const history = useHistory();
   const { id } = useParams<PageParams>();
   const [category, setCategory] = useState<CategoryType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: 'secondary',
-    variant: 'contained',
-    disabled: loading,
-  };
 
   const {
     register,
@@ -66,9 +42,12 @@ const CategoryForm: React.FC = () => {
     errors,
     reset,
     watch,
-  } = useForm<any>({
+    trigger,
+  } = useForm<CategoryType>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
+      id: '',
+      name: '',
       is_active: true,
     },
   });
@@ -129,7 +108,10 @@ const CategoryForm: React.FC = () => {
   }, [reset, id, snackbar]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <DefaultForm
+      onSubmit={handleSubmit(onSubmit)}
+      GridItemProps={{ xs: 12, md: 6 }}
+    >
       <TextField
         name="name"
         label="Nome"
@@ -166,15 +148,15 @@ const CategoryForm: React.FC = () => {
         label="Ativo?"
         labelPlacement="end"
       />
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e Continuar editando
-        </Button>
-      </Box>
-    </form>
+      <SubmitActions
+        disableButtons={loading}
+        handleSave={() => {
+          trigger().then(isValid => {
+            isValid && onSubmit(getValues(), null);
+          });
+        }}
+      />
+    </DefaultForm>
   );
 };
 

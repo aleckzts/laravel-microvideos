@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box,
-  Button,
   FormControl,
   FormControlLabel,
   FormHelperText,
   FormLabel,
-  makeStyles,
   Radio,
   RadioGroup,
   TextField,
-  Theme,
 } from '@material-ui/core';
-import { ButtonProps } from '@material-ui/core/Button/Button';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -22,6 +17,8 @@ import { useSnackbar } from 'notistack';
 import httpVideo from '../../services/api';
 
 import Yup from '../../yupBR';
+import SubmitActions from '../../components/SubmitActions';
+import DefaultForm from '../../components/DefaultForm';
 
 export interface PageParams {
   id: string;
@@ -33,34 +30,17 @@ export interface CastMemberType {
   type: number;
 }
 
-const useStyles = makeStyles((theme: Theme) => {
-  return {
-    submit: {
-      margin: theme.spacing(1),
-    },
-  };
-});
-
 const validationSchema = Yup.object().shape({
   name: Yup.string().label('Nome').required().max(255),
   type: Yup.number().label('Tipo').required(),
 });
 
 const CastMemberForm: React.FC = () => {
-  const classes = useStyles();
-
   const snackbar = useSnackbar();
   const history = useHistory();
   const { id } = useParams<PageParams>();
   const [castMember, setCastMember] = useState<CastMemberType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: 'secondary',
-    variant: 'contained',
-    disabled: loading,
-  };
 
   const {
     register,
@@ -70,7 +50,8 @@ const CastMemberForm: React.FC = () => {
     errors,
     reset,
     watch,
-  } = useForm<any>({
+    trigger,
+  } = useForm<CastMemberType>({
     resolver: yupResolver(validationSchema),
   });
 
@@ -130,7 +111,10 @@ const CastMemberForm: React.FC = () => {
   }, [reset, id, snackbar]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <DefaultForm
+      onSubmit={handleSubmit(onSubmit)}
+      GridItemProps={{ xs: 12, md: 6 }}
+    >
       <TextField
         name="name"
         label="Nome"
@@ -172,15 +156,15 @@ const CastMemberForm: React.FC = () => {
           </FormHelperText>
         )}
       </FormControl>
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e Continuar editando
-        </Button>
-      </Box>
-    </form>
+      <SubmitActions
+        disableButtons={loading}
+        handleSave={() => {
+          trigger().then(isValid => {
+            isValid && onSubmit(getValues(), null);
+          });
+        }}
+      />
+    </DefaultForm>
   );
 };
 

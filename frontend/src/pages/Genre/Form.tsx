@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box,
-  Button,
-  makeStyles,
+  Checkbox,
+  FormControlLabel,
   MenuItem,
   TextField,
-  Theme,
 } from '@material-ui/core';
-import { ButtonProps } from '@material-ui/core/Button/Button';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -19,6 +16,8 @@ import httpVideo from '../../services/api';
 import Yup from '../../yupBR';
 
 import { CategoryType } from '../Category/Form';
+import SubmitActions from '../../components/SubmitActions';
+import DefaultForm from '../../components/DefaultForm';
 
 export interface PageParams {
   id: string;
@@ -31,13 +30,9 @@ export interface GenreType {
   categories: CategoryType[];
 }
 
-const useStyles = makeStyles((theme: Theme) => {
-  return {
-    submit: {
-      margin: theme.spacing(1),
-    },
-  };
-});
+interface GenreFormType extends GenreType {
+  categories_id: string[];
+}
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().label('Nome').required().max(255),
@@ -45,21 +40,12 @@ const validationSchema = Yup.object().shape({
 });
 
 const GenreForm: React.FC = () => {
-  const classes = useStyles();
-
   const snackbar = useSnackbar();
   const history = useHistory();
   const { id } = useParams<PageParams>();
   const [genre, setGenre] = useState<GenreType | null>(null);
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: 'secondary',
-    variant: 'contained',
-    disabled: loading,
-  };
 
   const {
     register,
@@ -69,9 +55,14 @@ const GenreForm: React.FC = () => {
     errors,
     reset,
     watch,
-  } = useForm<any>({
+    trigger,
+  } = useForm<GenreFormType>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
+      id: '',
+      name: '',
+      is_active: true,
+      categories: [],
       categories_id: [],
     },
   });
@@ -117,6 +108,7 @@ const GenreForm: React.FC = () => {
 
   useEffect(() => {
     register({ name: 'type' });
+    register({ name: 'is_active' });
   }, [register]);
 
   useEffect(() => {
@@ -154,9 +146,13 @@ const GenreForm: React.FC = () => {
     const values = event.target.value as unknown[];
     setValue('categories_id', values as never[]);
   };
+  console.log(errors);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <DefaultForm
+      onSubmit={handleSubmit(onSubmit)}
+      GridItemProps={{ xs: 12, md: 6 }}
+    >
       <TextField
         name="name"
         label="Nome"
@@ -179,7 +175,7 @@ const GenreForm: React.FC = () => {
         onChange={handleChangeMultiple}
         disabled={loading}
         error={errors.categories_id !== undefined}
-        helperText={errors.categories_id && errors.categories_id.message}
+        // helperText={errors.categories_id && errors.categories_id.message}
         InputLabelProps={{ shrink: true }}
         SelectProps={{
           multiple: true,
@@ -194,15 +190,28 @@ const GenreForm: React.FC = () => {
           </MenuItem>
         ))}
       </TextField>
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e Continuar editando
-        </Button>
-      </Box>
-    </form>
+      <FormControlLabel
+        disabled={loading}
+        control={
+          <Checkbox
+            name="is_active"
+            color="primary"
+            onChange={() => setValue('is_active', !getValues().is_active)}
+            checked={watch('is_active')}
+          />
+        }
+        label="Ativo?"
+        labelPlacement="end"
+      />
+      <SubmitActions
+        disableButtons={loading}
+        handleSave={() => {
+          trigger().then(isValid => {
+            isValid && onSubmit(getValues(), null);
+          });
+        }}
+      />
+    </DefaultForm>
   );
 };
 
