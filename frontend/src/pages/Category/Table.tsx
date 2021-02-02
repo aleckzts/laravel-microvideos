@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
@@ -7,11 +6,18 @@ import httpVideo from '../../services/api';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
 import { CategoryType } from './Form';
+import Table, { TableColumn } from '../../components/Table';
 
-const columsDefinition: MUIDataTableColumn[] = [
+const columsDefinition: TableColumn[] = [
+  {
+    name: 'id',
+    label: 'ID',
+    width: '30%',
+  },
   {
     name: 'name',
     label: 'Nome',
+    width: '43%',
   },
   {
     name: 'is_active',
@@ -21,6 +27,7 @@ const columsDefinition: MUIDataTableColumn[] = [
         return value ? <BadgeYes /> : <BadgeNo />;
       },
     },
+    width: '4%',
   },
   {
     name: 'created_at',
@@ -30,30 +37,50 @@ const columsDefinition: MUIDataTableColumn[] = [
         return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>;
       },
     },
+    width: '10%',
+  },
+  {
+    name: 'actions',
+    label: 'Ações',
+    width: '13%',
   },
 ];
 
 const CategoryTable: React.FC = () => {
   const [data, setData] = useState<CategoryType[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
-    httpVideo.get<{ data: CategoryType[] }>('/categories').then(response => {
-      if (!isCancelled) {
-        setData(response.data.data);
-      }
-    });
 
+    async function getData(): Promise<void> {
+      setLoading(true);
+      try {
+        const response = await httpVideo.get<{ data: CategoryType[] }>(
+          '/categories',
+        );
+        if (!isCancelled) {
+          setData(response.data.data);
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getData();
     return () => {
       isCancelled = true;
     };
   }, []);
 
   return (
-    <MUIDataTable
+    <Table
       title="Listagem de Categorias"
       columns={columsDefinition}
       data={data}
+      loading={loading}
     />
   );
 };

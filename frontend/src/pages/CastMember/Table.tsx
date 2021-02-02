@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
 import { Chip } from '@material-ui/core';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
@@ -7,6 +6,7 @@ import format from 'date-fns/format';
 import httpVideo from '../../services/api';
 
 import { CastMemberType } from './Form';
+import Table, { TableColumn } from '../../components/Table';
 
 type castMemberTypeInterface = {
   [key: string]: string;
@@ -17,10 +17,16 @@ const castMemberType: castMemberTypeInterface = {
   '2': 'Ator',
 };
 
-const columsDefinition: MUIDataTableColumn[] = [
+const columsDefinition: TableColumn[] = [
+  {
+    name: 'id',
+    label: 'ID',
+    width: '30%',
+  },
   {
     name: 'name',
     label: 'Nome',
+    width: '43%',
   },
   {
     name: 'type',
@@ -30,6 +36,7 @@ const columsDefinition: MUIDataTableColumn[] = [
         return <Chip label={castMemberType[value]} color="primary" />;
       },
     },
+    width: '10%',
   },
   {
     name: 'created_at',
@@ -39,32 +46,51 @@ const columsDefinition: MUIDataTableColumn[] = [
         return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>;
       },
     },
+    width: '10%',
+  },
+  {
+    name: 'actions',
+    label: 'Ações',
+    width: '13%',
   },
 ];
 
 const CastMemberTable: React.FC = () => {
   const [data, setData] = useState<CastMemberType[]>([]);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     let isCancelled = false;
-    httpVideo
-      .get<{ data: CastMemberType[] }>('/cast_members')
-      .then(response => {
+
+    async function getData(): Promise<void> {
+      setLoading(true);
+      try {
+        const response = await httpVideo.get<{ data: CastMemberType[] }>(
+          '/cast_members',
+        );
         if (!isCancelled) {
           setData(response.data.data);
         }
-      });
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
+    getData();
     return () => {
       isCancelled = true;
     };
   }, []);
 
   return (
-    <MUIDataTable
+    <Table
       title="Listagem de Membros de Elenco"
       columns={columsDefinition}
       data={data}
+      loading={loading}
     />
   );
 };
