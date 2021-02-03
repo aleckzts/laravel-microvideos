@@ -93,7 +93,7 @@ const CastMemberForm: React.FC = () => {
     async function getCastMember(): Promise<void> {
       setLoading(true);
       try {
-        const response = await CastMemberApi.get<{ data: CastMemberType }>(id);
+        const response = await CastMemberApi.get(id);
         setCastMember(response.data.data);
         reset(response.data.data);
       } catch (err) {

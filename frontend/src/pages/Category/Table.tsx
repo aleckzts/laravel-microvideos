@@ -74,7 +74,7 @@ const CategoryTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await CategoryApi.list<{ data: CategoryType[] }>();
+        const response = await CategoryApi.list();
         if (!isCancelled) {
           setData(response.data.data);
         }

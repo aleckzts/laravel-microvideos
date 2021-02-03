@@ -103,7 +103,7 @@ const GenreForm: React.FC = () => {
   }, [register]);
 
   useEffect(() => {
-    CategoryApi.list<{ data: CategoryType[] }>({
+    CategoryApi.list({
       queryParams: { all: '' },
     }).then(response => setCategories(response.data.data));
   }, []);
@@ -117,7 +117,7 @@ const GenreForm: React.FC = () => {
     async function getGenre(): Promise<void> {
       setLoading(true);
       try {
-        const response = await GenreApi.get<{ data: GenreType }>(id);
+        const response = await GenreApi.get(id);
         setGenre(response.data.data);
         reset({
           ...response.data.data,

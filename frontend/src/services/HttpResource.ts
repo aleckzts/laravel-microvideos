@@ -1,29 +1,29 @@
 import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-class HttpResource {
+class HttpResource<T> {
   constructor(protected http: AxiosInstance, protected resource: string) {}
 
-  list<T>(options?: { queryParams?: any }): Promise<AxiosResponse<T>> {
+  list(options?: { queryParams?: any }): Promise<AxiosResponse<{ data: T[] }>> {
     const config: AxiosRequestConfig = {};
     if (options && options.queryParams) {
       config.params = options.queryParams;
     }
-    return this.http.get<T>(this.resource, config);
+    return this.http.get<{ data: T[] }>(this.resource, config);
   }
 
-  get<T>(id: string): Promise<AxiosResponse<T>> {
-    return this.http.get<T>(`${this.resource}/${id}`);
+  get(id: string): Promise<AxiosResponse<{ data: T }>> {
+    return this.http.get<{ data: T }>(`${this.resource}/${id}`);
   }
 
-  create<T>(data: T): Promise<AxiosResponse<T>> {
-    return this.http.post<T>(this.resource, data);
+  create(data: T): Promise<AxiosResponse<{ data: T }>> {
+    return this.http.post<{ data: T }>(this.resource, data);
   }
 
-  update<T>(id: string, data: T): Promise<AxiosResponse<T>> {
-    return this.http.put<T>(`${this.resource}/${id}`, data);
+  update(id: string, data: T): Promise<AxiosResponse<{ data: T }>> {
+    return this.http.put<{ data: T }>(`${this.resource}/${id}`, data);
   }
 
-  delete<T>(id: string): Promise<AxiosResponse<T>> {
+  delete(id: string): Promise<AxiosResponse<T>> {
     return this.http.delete<T>(`${this.resource}/${id}`);
   }
 }

@@ -16,10 +16,12 @@ interface DefaultFormProps
   GridItemProps?: GridProps;
 }
 
-const DefaultForm: React.FC<DefaultFormProps> = (
-  { GridContainerProps, GridItemProps, children },
+const DefaultForm: React.FC<DefaultFormProps> = ({
+  GridContainerProps,
+  GridItemProps,
+  children,
   ...props
-) => {
+}) => {
   const classes = useStyles();
 
   return (

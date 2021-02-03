@@ -91,7 +91,7 @@ const GenreTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await GenreApi.list<{ data: GenreType[] }>();
+        const response = await GenreApi.list();
         if (!isCancelled) {
           setData(response.data.data);
         }

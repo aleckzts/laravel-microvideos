@@ -58,12 +58,10 @@ const CategoryForm: React.FC = () => {
       const http = !category
         ? CategoryApi.create(formData)
         : CategoryApi.update(category.id, formData);
-
       const response = await http;
       snackbar.enqueueSnackbar('Categoria salva com sucesso', {
         variant: 'success',
       });
-
       setTimeout(() => {
         if (event) {
           id
@@ -91,7 +89,7 @@ const CategoryForm: React.FC = () => {
     async function getCategory(): Promise<void> {
       setLoading(true);
       try {
-        const response = await CategoryApi.get<{ data: CategoryType }>(id);
+        const response = await CategoryApi.get(id);
         setCategory(response.data.data);
         reset(response.data.data);
       } catch (err) {

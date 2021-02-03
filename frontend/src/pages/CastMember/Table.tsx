@@ -83,7 +83,7 @@ const CastMemberTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await CastMemberApi.list<{ data: CastMemberType[] }>();
+        const response = await CastMemberApi.list();
         if (!isCancelled) {
           setData(response.data.data);
         }
