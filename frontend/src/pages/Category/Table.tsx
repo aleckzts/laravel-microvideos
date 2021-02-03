@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
-import httpVideo from '../../services/api';
+import { IconButton } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import EditIcon from '@material-ui/icons/Edit';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
-import { CategoryType } from './Form';
 import Table, { TableColumn } from '../../components/Table';
+import { CategoryType } from './Form';
+import CategoryApi from '../../services/CategoryApi';
 
 const columsDefinition: TableColumn[] = [
   {
@@ -43,6 +46,21 @@ const columsDefinition: TableColumn[] = [
     name: 'actions',
     label: 'Ações',
     width: '13%',
+    padding: '0 16px',
+    options: {
+      sort: false,
+      customBodyRender(_, tableMeta) {
+        return (
+          <IconButton
+            color="secondary"
+            component={Link}
+            to={`/categories/${tableMeta.rowData[0]}/edit`}
+          >
+            <EditIcon fontSize="inherit" />
+          </IconButton>
+        );
+      },
+    },
   },
 ];
 
@@ -56,9 +74,7 @@ const CategoryTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await httpVideo.get<{ data: CategoryType[] }>(
-          '/categories',
-        );
+        const response = await CategoryApi.list<{ data: CategoryType[] }>();
         if (!isCancelled) {
           setData(response.data.data);
         }

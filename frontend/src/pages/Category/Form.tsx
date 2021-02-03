@@ -6,11 +6,11 @@ import { yupResolver } from '@hookform/resolvers/yup';
 
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import httpVideo from '../../services/api';
 
 import Yup from '../../yupBR';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
+import CategoryApi from '../../services/CategoryApi';
 
 export interface PageParams {
   id: string;
@@ -56,8 +56,8 @@ const CategoryForm: React.FC = () => {
     setLoading(true);
     try {
       const http = !category
-        ? httpVideo.post('/categories', formData)
-        : httpVideo.put(`/categories/${category.id}`, formData);
+        ? CategoryApi.create(formData)
+        : CategoryApi.update(category.id, formData);
 
       const response = await http;
       snackbar.enqueueSnackbar('Categoria salva com sucesso', {
@@ -65,11 +65,13 @@ const CategoryForm: React.FC = () => {
       });
 
       setTimeout(() => {
-        event
-          ? id
+        if (event) {
+          id
             ? history.replace(`/categories/${response.data.data.id}/edit`)
-            : history.push(`/categories/${response.data.data.id}/edit`)
-          : history.push('/categories');
+            : history.push(`/categories/${response.data.data.id}/edit`);
+        } else {
+          history.push('/categories');
+        }
       });
     } catch (err) {
       console.log(err);
@@ -89,7 +91,7 @@ const CategoryForm: React.FC = () => {
     async function getCategory(): Promise<void> {
       setLoading(true);
       try {
-        const response = await httpVideo.get(`/categories/${id}`);
+        const response = await CategoryApi.get<{ data: CategoryType }>(id);
         setCategory(response.data.data);
         reset(response.data.data);
       } catch (err) {

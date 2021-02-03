@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Eloquent\Filterable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 abstract class BasicCrudController extends Controller
 {
-    protected $paginationSize = 15;
+    protected $defaultPerPage = 15;
 
     protected abstract function model();
 
@@ -20,9 +22,21 @@ abstract class BasicCrudController extends Controller
 
     protected abstract function resourceCollection();
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = !$this->paginationSize ? $this->model()::all() : $this->model()::paginate($this->paginationSize);
+        $perPage = (int) $request->get('per_page', $this->defaultPerPage);
+        $hasFilter = in_array(Filterable::class, class_uses($this->model()));
+
+        $query = $this->queryBuilder();
+
+        if ($hasFilter) {
+            $query = $query->filter($request->all());
+        }
+
+        $data = $request->has('all') || !$this->defaultPerPage
+            ? $query->get()
+            : $query->paginate($perPage);
+        // $data = !$this->perPage ? $this->model()::all() : $this->model()::paginate($this->perPage);
 
         $resourceCollectionClass = $this->resourceCollection();
 
@@ -36,7 +50,7 @@ abstract class BasicCrudController extends Controller
     public function store(Request $request)
     {
         $validatedData = $this->validate($request, $this->rulesStore());
-        $createdObj = $this->model()::create($validatedData);
+        $createdObj = $this->queryBuilder()->create($validatedData);
         $createdObj->refresh();
         $resource = $this->resource();
 
@@ -47,7 +61,7 @@ abstract class BasicCrudController extends Controller
     {
         $model = $this->model();
         $keyName = (new $model)->getRouteKeyName();
-        return $this->model()::where($keyName, $id)->firstOrFail();
+        return $this->queryBuilder()->where($keyName, $id)->firstOrFail();
     }
 
     public function show($id)
@@ -73,5 +87,9 @@ abstract class BasicCrudController extends Controller
         $deletedObj = $this->findOrFail($id);
         $deletedObj->delete();
         return response()->noContent(); // 204
+    }
+
+    protected function queryBuilder(): Builder{
+        return $this->model()::query();
     }
 }

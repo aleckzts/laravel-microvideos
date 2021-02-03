@@ -14,11 +14,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
-import httpVideo from '../../services/api';
-
 import Yup from '../../yupBR';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
+import CastMemberApi from '../../services/CastMemberApi';
 
 export interface PageParams {
   id: string;
@@ -59,8 +58,8 @@ const CastMemberForm: React.FC = () => {
     setLoading(true);
     try {
       const http = !castMember
-        ? httpVideo.post('/cast_members', formData)
-        : httpVideo.put(`/cast_members/${castMember.id}`, formData);
+        ? CastMemberApi.create(formData)
+        : CastMemberApi.update(castMember.id, formData);
 
       const response = await http;
       snackbar.enqueueSnackbar('Membro de elenco salvo com sucesso', {
@@ -68,11 +67,13 @@ const CastMemberForm: React.FC = () => {
       });
 
       setTimeout(() => {
-        event
-          ? id
+        if (event) {
+          id
             ? history.replace(`/cast-members/${response.data.data.id}/edit`)
-            : history.push(`/cast-members/${response.data.data.id}/edit`)
-          : history.push('/cast-members');
+            : history.push(`/cast-members/${response.data.data.id}/edit`);
+        } else {
+          history.push('/cast-members');
+        }
       });
     } catch (err) {
       console.log(err);
@@ -92,7 +93,7 @@ const CastMemberForm: React.FC = () => {
     async function getCastMember(): Promise<void> {
       setLoading(true);
       try {
-        const response = await httpVideo.get(`/cast_members/${id}`);
+        const response = await CastMemberApi.get<{ data: CastMemberType }>(id);
         setCastMember(response.data.data);
         reset(response.data.data);
       } catch (err) {

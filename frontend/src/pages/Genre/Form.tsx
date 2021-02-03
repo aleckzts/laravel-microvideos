@@ -11,13 +11,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
-import httpVideo from '../../services/api';
-
 import Yup from '../../yupBR';
 
 import { CategoryType } from '../Category/Form';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
+import GenreApi from '../../services/GenreApi';
+import CategoryApi from '../../services/CategoryApi';
 
 export interface PageParams {
   id: string;
@@ -71,8 +71,8 @@ const GenreForm: React.FC = () => {
     setLoading(true);
     try {
       const http = !genre
-        ? httpVideo.post('/genres', formData)
-        : httpVideo.put(`/genres/${genre.id}`, formData);
+        ? GenreApi.create(formData)
+        : GenreApi.update(genre.id, formData);
 
       const response = await http;
       snackbar.enqueueSnackbar('Gênero salvo com sucesso', {
@@ -80,11 +80,13 @@ const GenreForm: React.FC = () => {
       });
 
       setTimeout(() => {
-        event
-          ? id
+        if (event) {
+          id
             ? history.replace(`/genres/${response.data.data.id}/edit`)
-            : history.push(`/genres/${response.data.data.id}/edit`)
-          : history.push('/genres');
+            : history.push(`/genres/${response.data.data.id}/edit`);
+        } else {
+          history.push('/genres');
+        }
       });
     } catch (err) {
       console.log(err);
@@ -101,9 +103,9 @@ const GenreForm: React.FC = () => {
   }, [register]);
 
   useEffect(() => {
-    httpVideo
-      .get<{ data: CategoryType[] }>('/categories')
-      .then(response => setCategories(response.data.data));
+    CategoryApi.list<{ data: CategoryType[] }>({
+      queryParams: { all: '' },
+    }).then(response => setCategories(response.data.data));
   }, []);
 
   useEffect(() => {
@@ -115,9 +117,7 @@ const GenreForm: React.FC = () => {
     async function getGenre(): Promise<void> {
       setLoading(true);
       try {
-        const response = await httpVideo.get<{ data: GenreType }>(
-          `/genres/${id}`,
-        );
+        const response = await GenreApi.get<{ data: GenreType }>(id);
         setGenre(response.data.data);
         reset({
           ...response.data.data,

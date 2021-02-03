@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Chip } from '@material-ui/core';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
-import httpVideo from '../../services/api';
+import { IconButton } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import EditIcon from '@material-ui/icons/Edit';
+import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
-import { GenreType } from './Form';
 import Table, { TableColumn } from '../../components/Table';
+import { GenreType } from './Form';
+import GenreApi from '../../services/GenreApi';
 
 type categoryInterface = {
   name: string;
@@ -21,7 +24,7 @@ const columsDefinition: TableColumn[] = [
   {
     name: 'name',
     label: 'Nome',
-    width: '43%',
+    width: '23%',
   },
   {
     name: 'categories',
@@ -41,11 +44,7 @@ const columsDefinition: TableColumn[] = [
     label: 'Ativo',
     options: {
       customBodyRender(value) {
-        return value ? (
-          <Chip label="Sim" color="primary" />
-        ) : (
-          <Chip label="Não" color="secondary" />
-        );
+        return value ? <BadgeYes /> : <BadgeNo />;
       },
     },
     width: '4%',
@@ -64,6 +63,21 @@ const columsDefinition: TableColumn[] = [
     name: 'actions',
     label: 'Ações',
     width: '13%',
+    padding: '0 16px',
+    options: {
+      sort: false,
+      customBodyRender(_, tableMeta) {
+        return (
+          <IconButton
+            color="secondary"
+            component={Link}
+            to={`/genres/${tableMeta.rowData[0]}/edit`}
+          >
+            <EditIcon fontSize="inherit" />
+          </IconButton>
+        );
+      },
+    },
   },
 ];
 
@@ -77,7 +91,7 @@ const GenreTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await httpVideo.get<{ data: GenreType[] }>('/genres');
+        const response = await GenreApi.list<{ data: GenreType[] }>();
         if (!isCancelled) {
           setData(response.data.data);
         }

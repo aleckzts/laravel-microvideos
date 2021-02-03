@@ -5,7 +5,7 @@ import MUIDataTable, {
   MUIDataTableProps,
 } from 'mui-datatables';
 import { merge, omit, cloneDeep } from 'lodash';
-import { MuiThemeProvider, useTheme } from '@material-ui/core';
+import { MuiThemeProvider, useMediaQuery, useTheme } from '@material-ui/core';
 
 const defaultOptions: MUIDataTableOptions = {
   print: false,
@@ -47,6 +47,7 @@ const defaultOptions: MUIDataTableOptions = {
 
 export interface TableColumn extends MUIDataTableColumn {
   width?: string;
+  padding?: string;
 }
 
 interface TableProps extends MUIDataTableProps {
@@ -56,6 +57,7 @@ interface TableProps extends MUIDataTableProps {
 
 const Table: React.FC<TableProps> = ({ columns, loading, ...props }) => {
   const theme = cloneDeep(useTheme());
+  const isSMOrDown = useMediaQuery(theme.breakpoints.down('sm'));
 
   function setColumnsWidth(columnsWidth: TableColumn[]): void {
     columnsWidth.forEach((column, key) => {
@@ -67,6 +69,13 @@ const Table: React.FC<TableProps> = ({ columns, loading, ...props }) => {
           width: column.width,
         };
       }
+
+      if (column.padding) {
+        const overrides = theme.overrides as any;
+        overrides.MUIDataTableBodyCell.root[`&:nth-child(${key + 2})`] = {
+          padding: column.padding,
+        };
+      }
     });
   }
 
@@ -74,7 +83,6 @@ const Table: React.FC<TableProps> = ({ columns, loading, ...props }) => {
     setColumnsWidth(columns);
     return extractColumns.map(column => omit(column, 'width'));
   }
-
   // function applyLoading(): void {
   //   // if (props.options) {
   //   const textLables = (props.options as any).textLabels;
@@ -92,6 +100,11 @@ const Table: React.FC<TableProps> = ({ columns, loading, ...props }) => {
     },
     {
       options: {
+        responsive: isSMOrDown ? 'simple' : 'vertical',
+      },
+    },
+    {
+      options: {
         textLabels: {
           body: {
             noMatch: loading ? 'Carregando' : 'Nenhum registro encontrado',
@@ -101,7 +114,12 @@ const Table: React.FC<TableProps> = ({ columns, loading, ...props }) => {
     },
   );
 
+  // function applyResponsive(): void {
+  //   newProps.options.responsive = isSMorDown ? 'simple' : 'd';
+  // }
+
   // applyLoading();
+  // applyResponsive();
 
   return (
     <MuiThemeProvider theme={theme}>

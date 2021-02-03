@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\Traits\Uuid;
+use App\ModelFilters\CastMemberFilter;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CastMember extends Model
 {
-    use SoftDeletes, Uuid;
+    use SoftDeletes, Traits\Uuid, Filterable;
 
     const TYPE_DIRECTOR = 1;
     const TYPE_ACTOR = 2;
@@ -20,4 +21,9 @@ class CastMember extends Model
         'type' => 'integer'
     ];
     public $incrementing = false;
+
+    public function modelFilter()
+    {
+        return $this->provideFilter(CastMemberFilter::class);
+    }
 }

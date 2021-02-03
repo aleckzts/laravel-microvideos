@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Chip } from '@material-ui/core';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
-import httpVideo from '../../services/api';
+import { Chip, IconButton } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import EditIcon from '@material-ui/icons/Edit';
 
-import { CastMemberType } from './Form';
 import Table, { TableColumn } from '../../components/Table';
+import { CastMemberType } from './Form';
+import CastMemberApi from '../../services/CastMemberApi';
 
 type castMemberTypeInterface = {
   [key: string]: string;
@@ -26,7 +28,7 @@ const columsDefinition: TableColumn[] = [
   {
     name: 'name',
     label: 'Nome',
-    width: '43%',
+    width: '33%',
   },
   {
     name: 'type',
@@ -52,6 +54,21 @@ const columsDefinition: TableColumn[] = [
     name: 'actions',
     label: 'Ações',
     width: '13%',
+    padding: '0 16px',
+    options: {
+      sort: false,
+      customBodyRender(_, tableMeta) {
+        return (
+          <IconButton
+            color="secondary"
+            component={Link}
+            to={`/cast-members/${tableMeta.rowData[0]}/edit`}
+          >
+            <EditIcon fontSize="inherit" />
+          </IconButton>
+        );
+      },
+    },
   },
 ];
 
@@ -66,9 +83,7 @@ const CastMemberTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await httpVideo.get<{ data: CastMemberType[] }>(
-          '/cast_members',
-        );
+        const response = await CastMemberApi.list<{ data: CastMemberType[] }>();
         if (!isCancelled) {
           setData(response.data.data);
         }
