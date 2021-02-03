@@ -64,9 +64,16 @@ const columsDefinition: TableColumn[] = [
   },
 ];
 
+interface SearchStateType {
+  search: string;
+}
+
 const CategoryTable: React.FC = () => {
   const [data, setData] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchState, setSearchState] = useState<SearchStateType>({
+    search: '',
+  });
 
   useEffect(() => {
     let isCancelled = false;
@@ -74,7 +81,9 @@ const CategoryTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await CategoryApi.list();
+        const response = await CategoryApi.list({
+          queryParams: { search: searchState.search },
+        });
         if (!isCancelled) {
           setData(response.data.data);
         }
@@ -89,7 +98,7 @@ const CategoryTable: React.FC = () => {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [searchState.search]);
 
   return (
     <Table
@@ -97,6 +106,10 @@ const CategoryTable: React.FC = () => {
       columns={columsDefinition}
       data={data}
       loading={loading}
+      options={{
+        searchText: searchState.search,
+        onSearchChange: value => value && setSearchState({ search: value }),
+      }}
     />
   );
 };

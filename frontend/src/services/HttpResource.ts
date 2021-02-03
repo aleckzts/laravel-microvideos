@@ -1,10 +1,25 @@
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  CancelTokenSource,
+} from 'axios';
 
 class HttpResource<T> {
+  private cancelList: CancelTokenSource | null = null;
+
   constructor(protected http: AxiosInstance, protected resource: string) {}
 
   list(options?: { queryParams?: any }): Promise<AxiosResponse<{ data: T[] }>> {
-    const config: AxiosRequestConfig = {};
+    if (this.cancelList) {
+      this.cancelList.cancel('list request canceled');
+    }
+
+    this.cancelList = axios.CancelToken.source();
+
+    const config: AxiosRequestConfig = {
+      cancelToken: this.cancelList.token,
+    };
     if (options && options.queryParams) {
       config.params = options.queryParams;
     }
@@ -25,6 +40,10 @@ class HttpResource<T> {
 
   delete(id: string): Promise<AxiosResponse<T>> {
     return this.http.delete<T>(`${this.resource}/${id}`);
+  }
+
+  isRequestCancelled(error: any): boolean {
+    return axios.isCancel(error);
   }
 }
 
