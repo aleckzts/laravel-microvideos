@@ -7,6 +7,8 @@ import MUIDataTable, {
 import { merge, omit, cloneDeep } from 'lodash';
 import { MuiThemeProvider, useMediaQuery, useTheme } from '@material-ui/core';
 
+import DebounceTableSearch from './DebouncedTableSearch.js';
+
 const defaultOptions: MUIDataTableOptions = {
   print: false,
   download: false,
@@ -42,6 +44,21 @@ const defaultOptions: MUIDataTableOptions = {
       delete: 'Excluir',
       deleteAria: 'Excluir registros selecionados',
     },
+  },
+  customSearchRender: (
+    searchText: string,
+    handleSearch: any,
+    hideSearch: any,
+    options: any,
+  ) => {
+    return (
+      <DebounceTableSearch
+        searchText={searchText}
+        onSearch={handleSearch}
+        onHide={hideSearch}
+        options={options}
+      />
+    );
   },
 };
 

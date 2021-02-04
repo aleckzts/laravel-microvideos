@@ -10,6 +10,7 @@ import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 import Table, { TableColumn } from '../../components/Table';
 import { CategoryType } from './Form';
 import CategoryApi from '../../services/CategoryApi';
+import FilterResetButton from '../../components/Table/FilterResetButton';
 
 const columsDefinition: TableColumn[] = [
   {
@@ -85,9 +86,7 @@ interface SearchStateType {
 }
 
 const CategoryTable: React.FC = () => {
-  const [data, setData] = useState<CategoryType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchState, setSearchState] = useState<SearchStateType>({
+  const initialSearchState: SearchStateType = {
     search: '',
     pagination: {
       page: 1,
@@ -98,7 +97,12 @@ const CategoryTable: React.FC = () => {
       sort: null,
       dir: null,
     },
-  });
+  };
+  const [data, setData] = useState<CategoryType[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchState, setSearchState] = useState<SearchStateType>(
+    initialSearchState,
+  );
 
   useEffect(() => {
     let isCancelled = false;
@@ -155,8 +159,18 @@ const CategoryTable: React.FC = () => {
         page: searchState.pagination.page - 1,
         rowsPerPage: searchState.pagination.per_page,
         count: searchState.pagination.total,
+        customToolbar: () => (
+          <FilterResetButton
+            handleClick={() => setSearchState(initialSearchState)}
+          />
+        ),
         onSearchChange: value =>
-          value && setSearchState({ ...searchState, search: value }),
+          value &&
+          setSearchState({
+            ...searchState,
+            search: value,
+            pagination: { ...searchState.pagination, page: 1 },
+          }),
         onChangePage: page =>
           setSearchState({
             ...searchState,
