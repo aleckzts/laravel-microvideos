@@ -22,10 +22,10 @@ abstract class BasicCrudController extends Controller
 
     protected abstract function resourceCollection();
 
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $perPage = (int) $request->get('per_page', $this->defaultPerPage);
-        $hasFilter = in_array(Filterable::class, class_uses($this->model()));
+        $hasFilter = in_array('EloquentFilter\Filterable', class_uses($this->model()));
+        // dd($hasFilter, class_uses_recursive($this->model()));
 
         $query = $this->queryBuilder();
 
@@ -33,10 +33,9 @@ abstract class BasicCrudController extends Controller
             $query = $query->filter($request->all());
         }
 
-        $data = $request->has('all') || !$this->defaultPerPage
+        $data = $request->has('all') || !$perPage
             ? $query->get()
             : $query->paginate($perPage);
-        // $data = !$this->perPage ? $this->model()::all() : $this->model()::paginate($this->perPage);
 
         $resourceCollectionClass = $this->resourceCollection();
 

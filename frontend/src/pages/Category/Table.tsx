@@ -16,6 +16,9 @@ const columsDefinition: TableColumn[] = [
     name: 'id',
     label: 'ID',
     width: '30%',
+    options: {
+      sort: false,
+    },
   },
   {
     name: 'name',
@@ -25,22 +28,22 @@ const columsDefinition: TableColumn[] = [
   {
     name: 'is_active',
     label: 'Ativo',
+    width: '4%',
     options: {
       customBodyRender(value) {
         return value ? <BadgeYes /> : <BadgeNo />;
       },
     },
-    width: '4%',
   },
   {
     name: 'created_at',
     label: 'Criado em',
+    width: '10%',
     options: {
       customBodyRender(value) {
         return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>;
       },
     },
-    width: '10%',
   },
   {
     name: 'actions',
@@ -64,8 +67,21 @@ const columsDefinition: TableColumn[] = [
   },
 ];
 
+interface PaginationType {
+  page: number;
+  total: number;
+  per_page: number;
+}
+
+interface OrderType {
+  sort: string | null;
+  dir: string | null;
+}
+
 interface SearchStateType {
   search: string;
+  pagination: PaginationType;
+  order: OrderType;
 }
 
 const CategoryTable: React.FC = () => {
@@ -73,6 +89,15 @@ const CategoryTable: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchState, setSearchState] = useState<SearchStateType>({
     search: '',
+    pagination: {
+      page: 1,
+      total: 0,
+      per_page: 10,
+    },
+    order: {
+      sort: null,
+      dir: null,
+    },
   });
 
   useEffect(() => {
@@ -82,10 +107,23 @@ const CategoryTable: React.FC = () => {
       setLoading(true);
       try {
         const response = await CategoryApi.list({
-          queryParams: { search: searchState.search },
+          queryParams: {
+            search: searchState.search,
+            page: searchState.pagination.page,
+            per_page: searchState.pagination.per_page,
+            sort: searchState.order.sort,
+            dir: searchState.order.dir,
+          },
         });
         if (!isCancelled) {
           setData(response.data.data);
+          setSearchState(prevState => ({
+            ...prevState,
+            pagination: {
+              ...prevState.pagination,
+              total: response.data.meta.total,
+            },
+          }));
         }
       } catch (err) {
         console.log(err);
@@ -98,7 +136,12 @@ const CategoryTable: React.FC = () => {
     return () => {
       isCancelled = true;
     };
-  }, [searchState.search]);
+  }, [
+    searchState.search,
+    searchState.pagination.page,
+    searchState.pagination.per_page,
+    searchState.order,
+  ]);
 
   return (
     <Table
@@ -107,8 +150,31 @@ const CategoryTable: React.FC = () => {
       data={data}
       loading={loading}
       options={{
+        serverSide: true,
         searchText: searchState.search,
-        onSearchChange: value => value && setSearchState({ search: value }),
+        page: searchState.pagination.page - 1,
+        rowsPerPage: searchState.pagination.per_page,
+        count: searchState.pagination.total,
+        onSearchChange: value =>
+          value && setSearchState({ ...searchState, search: value }),
+        onChangePage: page =>
+          setSearchState({
+            ...searchState,
+            pagination: { ...searchState.pagination, page: page + 1 },
+          }),
+        onChangeRowsPerPage: perPage =>
+          setSearchState({
+            ...searchState,
+            pagination: { ...searchState.pagination, per_page: perPage + 1 },
+          }),
+        onColumnSortChange: (changedColumn: string, direction: string) =>
+          setSearchState({
+            ...searchState,
+            order: {
+              sort: changedColumn,
+              dir: direction.includes('desc') ? 'desc' : 'asc',
+            },
+          }),
       }}
     />
   );

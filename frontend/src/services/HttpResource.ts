@@ -5,12 +5,20 @@ import axios, {
   CancelTokenSource,
 } from 'axios';
 
+interface MetaDataType {
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
 class HttpResource<T> {
   private cancelList: CancelTokenSource | null = null;
 
   constructor(protected http: AxiosInstance, protected resource: string) {}
 
-  list(options?: { queryParams?: any }): Promise<AxiosResponse<{ data: T[] }>> {
+  list(options?: {
+    queryParams?: any;
+  }): Promise<AxiosResponse<{ data: T[]; meta: MetaDataType }>> {
     if (this.cancelList) {
       this.cancelList.cancel('list request canceled');
     }
@@ -23,7 +31,10 @@ class HttpResource<T> {
     if (options && options.queryParams) {
       config.params = options.queryParams;
     }
-    return this.http.get<{ data: T[] }>(this.resource, config);
+    return this.http.get<{ data: T[]; meta: MetaDataType }>(
+      this.resource,
+      config,
+    );
   }
 
   get(id: string): Promise<AxiosResponse<{ data: T }>> {
