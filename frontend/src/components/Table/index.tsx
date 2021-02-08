@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { RefAttributes } from 'react';
 import MUIDataTable, {
   MUIDataTableColumn,
   MUIDataTableOptions,
@@ -77,95 +77,101 @@ const makeDefaultOption = (debounceWait?: number): MUIDataTableOptions => ({
   // customSearchRender: DebounceSearchRender(500),
 });
 
+export interface TableComponent {
+  changePage: (page: number) => void;
+  changeRowsPerPage: (rowsPerPage: number) => void;
+}
+
 export interface TableColumn extends MUIDataTableColumn {
   width?: string;
   padding?: string;
 }
 
-interface TableProps extends MUIDataTableProps {
+interface TableProps extends MUIDataTableProps, RefAttributes<TableComponent> {
   columns: TableColumn[];
   loading?: boolean;
   debounceWait?: number;
 }
 
-const Table: React.FC<TableProps> = ({
-  columns,
-  loading,
-  debounceWait,
-  ...props
-}) => {
-  const theme = cloneDeep(useTheme());
-  const isSMOrDown = useMediaQuery(theme.breakpoints.down('sm'));
+const Table = React.forwardRef<TableComponent, TableProps>(
+  ({ columns, loading, debounceWait, ...props }, ref) => {
+    const theme = cloneDeep(useTheme());
+    const isSMOrDown = useMediaQuery(theme.breakpoints.down('sm'));
 
-  function setColumnsWidth(columnsWidth: TableColumn[]): void {
-    columnsWidth.forEach((column, key) => {
-      if (column.width) {
-        const overrides = theme.overrides as any;
-        overrides.MUIDataTableHeadCell.fixedHeader[
-          `&:nth-child(${key + 2})`
-        ] = {
-          width: column.width,
-        };
-      }
+    function setColumnsWidth(columnsWidth: TableColumn[]): void {
+      columnsWidth.forEach((column, key) => {
+        if (column.width) {
+          const overrides = theme.overrides as any;
+          overrides.MUIDataTableHeadCell.fixedHeader[
+            `&:nth-child(${key + 2})`
+          ] = {
+            width: column.width,
+          };
+        }
 
-      if (column.padding) {
-        const overrides = theme.overrides as any;
-        overrides.MUIDataTableBodyCell.root[`&:nth-child(${key + 2})`] = {
-          padding: column.padding,
-        };
-      }
-    });
-  }
+        if (column.padding) {
+          const overrides = theme.overrides as any;
+          overrides.MUIDataTableBodyCell.root[`&:nth-child(${key + 2})`] = {
+            padding: column.padding,
+          };
+        }
+      });
+    }
 
-  function extractMuiDataTableColumns(extractColumns: TableColumn[]): any {
-    setColumnsWidth(columns);
-    return extractColumns.map(column => omit(column, 'width'));
-  }
-  // function applyLoading(): void {
-  //   // if (props.options) {
-  //   const textLables = (props.options as any).textLabels;
-  //   textLables.body.noMatch = loading
-  //     ? 'Carregando...'
-  //     : textLables.body.noMatch;
-  //   // }
-  // }
+    function extractMuiDataTableColumns(extractColumns: TableColumn[]): any {
+      setColumnsWidth(columns);
+      return extractColumns.map(column => omit(column, 'width'));
+    }
+    // function applyLoading(): void {
+    //   // if (props.options) {
+    //   const textLables = (props.options as any).textLabels;
+    //   textLables.body.noMatch = loading
+    //     ? 'Carregando...'
+    //     : textLables.body.noMatch;
+    //   // }
+    // }
 
-  const defaultOptions = makeDefaultOption(debounceWait);
+    const defaultOptions = makeDefaultOption(debounceWait);
 
-  const newProps = merge(
-    { options: defaultOptions },
-    props,
-    {
-      columns: extractMuiDataTableColumns(columns),
-    },
-    {
-      options: {
-        responsive: isSMOrDown ? 'simple' : 'vertical',
+    const newProps = merge(
+      { options: defaultOptions },
+      props,
+      {
+        columns: extractMuiDataTableColumns(columns),
       },
-    },
-    {
-      options: {
-        textLabels: {
-          body: {
-            noMatch: loading ? 'Carregando' : 'Nenhum registro encontrado',
+      {
+        options: {
+          responsive: isSMOrDown ? 'simple' : 'vertical',
+        },
+      },
+      {
+        options: {
+          textLabels: {
+            body: {
+              noMatch: loading ? 'Carregando' : 'Nenhum registro encontrado',
+            },
           },
         },
       },
-    },
-  );
+    );
 
-  // function applyResponsive(): void {
-  //   newProps.options.responsive = isSMorDown ? 'simple' : 'd';
-  // }
+    // function applyResponsive(): void {
+    //   newProps.options.responsive = isSMorDown ? 'simple' : 'd';
+    // }
 
-  // applyLoading();
-  // applyResponsive();
+    // applyLoading();
+    // applyResponsive();
 
-  return (
-    <MuiThemeProvider theme={theme}>
-      <MUIDataTable {...newProps} />
-    </MuiThemeProvider>
-  );
-};
+    return (
+      <MuiThemeProvider theme={theme}>
+        <MUIDataTable
+          {...newProps}
+          // @ts-ignore
+          ref={ref}
+        />
+      </MuiThemeProvider>
+    );
+  },
+);
 
 export default Table;

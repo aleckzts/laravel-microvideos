@@ -8,7 +8,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import { useSnackbar } from 'notistack';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
-import Table, { TableColumn } from '../../components/Table';
+import Table, { TableColumn, TableComponent } from '../../components/Table';
 import { GenreType } from './Form';
 import GenreApi from '../../services/GenreApi';
 import useFilter from '../../hooks/useFilter';
@@ -95,6 +95,7 @@ const GenreTable: React.FC = () => {
   const debounceTime = 300;
   const rowsPerPage = 15;
   const rowsPerPageOptions = [15, 25, 50];
+  const tableRef = useRef() as React.MutableRefObject<TableComponent>;
 
   const {
     filterManager,
@@ -107,6 +108,7 @@ const GenreTable: React.FC = () => {
     debounceWait: debounceTime,
     rowsPerPage,
     rowsPerPageOptions,
+    tableRef,
   });
 
   useEffect(() => {
@@ -161,6 +163,7 @@ const GenreTable: React.FC = () => {
       data={data}
       loading={loading}
       debounceWait={debounceTime}
+      ref={tableRef}
       options={{
         serverSide: true,
         searchText: filterState.search as string,

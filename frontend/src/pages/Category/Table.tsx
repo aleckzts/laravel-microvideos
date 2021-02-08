@@ -8,7 +8,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import { useSnackbar } from 'notistack';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
-import Table, { TableColumn } from '../../components/Table';
+import Table, { TableColumn, TableComponent } from '../../components/Table';
 import { CategoryType } from './Form';
 import CategoryApi from '../../services/CategoryApi';
 import FilterResetButton from '../../components/Table/FilterResetButton';
@@ -78,6 +78,7 @@ const CategoryTable: React.FC = () => {
   const debounceTime = 300;
   const rowsPerPage = 15;
   const rowsPerPageOptions = [15, 25, 50];
+  const tableRef = useRef() as React.MutableRefObject<TableComponent>;
 
   const {
     filterManager,
@@ -90,6 +91,7 @@ const CategoryTable: React.FC = () => {
     debounceWait: debounceTime,
     rowsPerPage,
     rowsPerPageOptions,
+    tableRef,
   });
 
   useEffect(() => {
@@ -144,6 +146,7 @@ const CategoryTable: React.FC = () => {
       data={data}
       loading={loading}
       debounceWait={debounceTime}
+      ref={tableRef}
       options={{
         serverSide: true,
         searchText: filterState.search as string,

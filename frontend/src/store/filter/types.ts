@@ -41,7 +41,11 @@ export interface SetOrderAction extends AnyAction {
   };
 }
 
-export type SetResetAction = AnyAction;
+export interface SetResetAction extends AnyAction {
+  payload: {
+    state: FilterStateType;
+  };
+}
 
 export type FilterActions =
   | SetSearchAction

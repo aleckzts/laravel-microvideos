@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import EditIcon from '@material-ui/icons/Edit';
 
 import { useSnackbar } from 'notistack';
-import Table, { TableColumn } from '../../components/Table';
+import Table, { TableColumn, TableComponent } from '../../components/Table';
 import { CastMemberType } from './Form';
 import CastMemberApi from '../../services/CastMemberApi';
 import useFilter from '../../hooks/useFilter';
@@ -86,6 +86,7 @@ const CastMemberTable: React.FC = () => {
   const debounceTime = 300;
   const rowsPerPage = 15;
   const rowsPerPageOptions = [15, 25, 50];
+  const tableRef = useRef() as React.MutableRefObject<TableComponent>;
 
   const {
     filterManager,
@@ -98,6 +99,7 @@ const CastMemberTable: React.FC = () => {
     debounceWait: debounceTime,
     rowsPerPage,
     rowsPerPageOptions,
+    tableRef,
   });
 
   useEffect(() => {
@@ -152,6 +154,7 @@ const CastMemberTable: React.FC = () => {
       data={data}
       loading={loading}
       debounceWait={debounceTime}
+      ref={tableRef}
       options={{
         serverSide: true,
         searchText: filterState.search as string,

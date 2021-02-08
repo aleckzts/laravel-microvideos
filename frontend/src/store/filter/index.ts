@@ -33,14 +33,14 @@ export const { Types, Creators } = createActions<
     setPage(payload: SetPageAction['payload']): SetPageAction;
     setPerPage(payload: SetPerPageAction['payload']): SetPerPageAction;
     setOrder(payload: SetOrderAction['payload']): SetOrderAction;
-    setReset(): SetResetAction;
+    setReset(payload: SetResetAction['payload']): SetResetAction;
   }
 >({
   setSearch: ['payload'],
   setPage: ['payload'],
   setPerPage: ['payload'],
   setOrder: ['payload'],
-  setReset: [],
+  setReset: ['payload'],
 });
 
 function SetSearch(
@@ -100,8 +100,11 @@ function SetOrder(
   };
 }
 
-function SetReset(): FilterStateType {
-  return { ...INITIAL_STATE, search: { value: null, update: true } };
+function SetReset(
+  state = INITIAL_STATE,
+  action: SetResetAction,
+): FilterStateType {
+  return action.payload.state;
 }
 
 const reducer = createReducer(INITIAL_STATE, {
