@@ -7,9 +7,9 @@ import MUIDataTable, {
 import { merge, omit, cloneDeep } from 'lodash';
 import { MuiThemeProvider, useMediaQuery, useTheme } from '@material-ui/core';
 
-import { debounceSearchRender } from './DebounceSearchRender.js';
+import DebounceTableSearch from './DebounceTableSearch.js';
 
-const defaultOptions: MUIDataTableOptions = {
+const makeDefaultOption = (debounceWait?: number): MUIDataTableOptions => ({
   print: false,
   download: false,
   textLabels: {
@@ -58,23 +58,24 @@ const defaultOptions: MUIDataTableOptions = {
   //   },
   //   300,
   // ),
-  // customSearchRender: (
-  //   searchText: string,
-  //   handleSearch: any,
-  //   hideSearch: any,
-  //   options: any,
-  // ) => {
-  //   return (
-  //     <DebounceTableSearch
-  //       searchText={searchText}
-  //       onSearch={handleSearch}
-  //       onHide={hideSearch}
-  //       options={options}
-  //     />
-  //   );
-  // },
-  customSearchRender: debounceSearchRender(500),
-};
+  customSearchRender: (
+    searchText: string,
+    handleSearch: any,
+    hideSearch: any,
+    options: any,
+  ) => {
+    return (
+      <DebounceTableSearch
+        searchText={searchText}
+        onSearch={handleSearch}
+        onHide={hideSearch}
+        options={options}
+        debounceWait={debounceWait}
+      />
+    );
+  },
+  // customSearchRender: DebounceSearchRender(500),
+});
 
 export interface TableColumn extends MUIDataTableColumn {
   width?: string;
@@ -84,9 +85,15 @@ export interface TableColumn extends MUIDataTableColumn {
 interface TableProps extends MUIDataTableProps {
   columns: TableColumn[];
   loading?: boolean;
+  debounceWait?: number;
 }
 
-const Table: React.FC<TableProps> = ({ columns, loading, ...props }) => {
+const Table: React.FC<TableProps> = ({
+  columns,
+  loading,
+  debounceWait,
+  ...props
+}) => {
   const theme = cloneDeep(useTheme());
   const isSMOrDown = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -122,6 +129,8 @@ const Table: React.FC<TableProps> = ({ columns, loading, ...props }) => {
   //     : textLables.body.noMatch;
   //   // }
   // }
+
+  const defaultOptions = makeDefaultOption(debounceWait);
 
   const newProps = merge(
     { options: defaultOptions },

@@ -5,25 +5,9 @@ import SearchIcon from '@material-ui/icons/Search';
 import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from '@material-ui/icons/Clear';
 import { withStyles } from '@material-ui/core/styles';
-// import debounce from 'lodash';
+import {debounce} from 'lodash';
 
-function debounce(func, wait, immediate) {
-  var timeout;
-  return function() {
-    var context = this,
-      args = arguments;
-    var later = function() {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    var callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
-  };
-}
-
-const defaultStyles = theme => ({
+const defaultSearchStyles = theme => ({
   main: {
     display: 'flex',
     flex: '1 0 auto',
@@ -43,12 +27,40 @@ const defaultStyles = theme => ({
   },
 });
 
-class _DebounceTableSearch extends React.Component {
-  handleTextChangeWrapper = _debouncedSearch => {
-    return function(event) {
-      _debouncedSearch(event.target.value);
+class TableSearch extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    const { searchText } = this.props;
+    let value = searchText;
+    if(searchText && searchText.value !== undefined) {
+      value = searchText.value;
+    }
+    this.state = {
+      text: value
     };
+    this.dispatchOnSearch = debounce(this.dispatchOnSearch.bind(this), this.props.debounceWait);
+  }
+
+  handleTextChange = event => {
+    const value = event.target.value;
+    this.setState({
+      text: value
+    }, () => this.dispatchOnSearch(value))
   };
+
+  dispatchOnSearch = value => {
+    this.props.onSearch(value)
+  };
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const { searchText } = this.props;
+    if(searchText && searchText.value !== undefined && prevProps.searchText !== this.props.searchText) {
+      const value = searchText.value;
+      this.setState({
+        text: value
+      }, () => this.props.onSearch(value))
+    }
+  }
 
   componentDidMount() {
     document.addEventListener('keydown', this.onKeyDown, false);
@@ -65,15 +77,16 @@ class _DebounceTableSearch extends React.Component {
   };
 
   render() {
-    const { classes, options, onHide, searchText, debounceWait } = this.props;
+    const { classes, options, onHide, searchText } = this.props;
 
-    const debouncedSearch = debounce(value => {
-      this.props.onSearch(value);
-    }, debounceWait);
+    let value = this.state.text;
+    if(searchText && searchText.value !== undefined) {
+      value= searchText.value;
+    }
 
     return (
       <Grow appear in={true} timeout={300}>
-        <div className={classes.main}>
+        <div className={classes.main} ref={el => (this.rootRef = el)}>
           <SearchIcon className={classes.searchIcon} />
           <TextField
             className={classes.searchText}
@@ -82,12 +95,11 @@ class _DebounceTableSearch extends React.Component {
               'data-test-id': options.textLabels.toolbar.search,
               'aria-label': options.textLabels.toolbar.search,
             }}
-            defaultValue={searchText}
-            onChange={this.handleTextChangeWrapper(debouncedSearch)}
+            value={value || ''}
+            onChange={this.handleTextChange}
             fullWidth={true}
             inputRef={el => (this.searchField = el)}
             placeholder={options.searchPlaceholder}
-            {...(options.searchProps ? options.searchProps : {})}
           />
           <IconButton className={classes.clearIcon} onClick={onHide}>
             <ClearIcon />
@@ -98,19 +110,4 @@ class _DebounceTableSearch extends React.Component {
   }
 }
 
-var DebounceTableSearch = withStyles(defaultStyles, { name: 'MUIDataTableSearch' })(_DebounceTableSearch);
-export { DebounceTableSearch };
-
-export function debounceSearchRender(debounceWait = 200) {
-  return (searchText, handleSearch, hideSearch, options) => {
-    return (
-      <DebounceTableSearch
-        searchText={searchText}
-        onSearch={handleSearch}
-        onHide={hideSearch}
-        options={options}
-        debounceWait={debounceWait}
-      />
-    );
-  };
-}
+export default withStyles(defaultSearchStyles, { name: 'MUIDataTableSearch' })(TableSearch);

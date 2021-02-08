@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
@@ -12,7 +12,7 @@ import Table, { TableColumn } from '../../components/Table';
 import { CategoryType } from './Form';
 import CategoryApi from '../../services/CategoryApi';
 import FilterResetButton from '../../components/Table/FilterResetButton';
-import reducer, { Creators, INITIAL_STATE } from '../../store/search';
+import useFilter from '../../hooks/useFilter';
 
 const columsDefinition: TableColumn[] = [
   {
@@ -72,44 +72,45 @@ const columsDefinition: TableColumn[] = [
 
 const CategoryTable: React.FC = () => {
   const snackbar = useSnackbar();
+  const isCancelled = useRef(false);
   const [data, setData] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchState, dispatch] = useReducer(reducer, INITIAL_STATE);
-  const [totalRecords, setTotalRecords] = useState(0);
+  const debounceTime = 300;
+  const rowsPerPage = 15;
+  const rowsPerPageOptions = [15, 25, 50];
 
-  function cleanSearchText(text: any): string {
-    let newText = text;
-    if (text && text.value !== undefined) {
-      newText = text.value;
-    }
-    return newText;
-  }
+  const {
+    filterManager,
+    debouncedFilterState,
+    filterState,
+    totalRecords,
+    setTotalRecords,
+  } = useFilter({
+    columns: columsDefinition,
+    debounceWait: debounceTime,
+    rowsPerPage,
+    rowsPerPageOptions,
+  });
 
   useEffect(() => {
-    let isCancelled = false;
+    isCancelled.current = false;
+    filterManager.pushHistory();
 
     async function getData(): Promise<void> {
       setLoading(true);
       try {
         const response = await CategoryApi.list({
           queryParams: {
-            search: cleanSearchText(searchState.search),
-            page: searchState.pagination.page,
-            per_page: searchState.pagination.per_page,
-            sort: searchState.order.sort,
-            dir: searchState.order.dir,
+            search: filterManager.cleanSearchText(filterState.search),
+            page: filterState.pagination.page,
+            per_page: filterState.pagination.per_page,
+            sort: filterState.order.sort,
+            dir: filterState.order.dir,
           },
         });
-        if (!isCancelled) {
+        if (!isCancelled.current) {
           setData(response.data.data);
           setTotalRecords(response.data.meta.total);
-          // setSearchState(prevState => ({
-          //   ...prevState,
-          //   pagination: {
-          //     ...prevState.pagination,
-          //     total: response.data.meta.total,
-          //   },
-          // }));
         }
       } catch (err) {
         console.log(err);
@@ -126,14 +127,14 @@ const CategoryTable: React.FC = () => {
 
     getData();
     return () => {
-      isCancelled = true;
+      isCancelled.current = true;
     };
   }, [
-    searchState.search,
-    searchState.pagination.page,
-    searchState.pagination.per_page,
-    searchState.order,
-    snackbar,
+    filterManager.cleanSearchText(debouncedFilterState.search),
+    debouncedFilterState.pagination.page,
+    debouncedFilterState.pagination.per_page,
+    debouncedFilterState.order,
+    // getData,
   ]);
 
   return (
@@ -142,29 +143,23 @@ const CategoryTable: React.FC = () => {
       columns={columsDefinition}
       data={data}
       loading={loading}
+      debounceWait={debounceTime}
       options={{
         serverSide: true,
-        searchText: searchState.search as string,
-        page: searchState.pagination.page - 1,
-        rowsPerPage: searchState.pagination.per_page,
+        searchText: filterState.search as string,
+        page: filterState.pagination.page - 1,
+        rowsPerPage: filterState.pagination.per_page,
+        rowsPerPageOptions,
         count: totalRecords,
         customToolbar: () => (
-          <FilterResetButton
-            handleClick={() => dispatch(Creators.setReset())}
-          />
+          <FilterResetButton handleClick={() => filterManager.resetFilter()} />
         ),
-        onSearchChange: value =>
-          dispatch(Creators.setSearch({ search: value as string })),
-        onChangePage: page => dispatch(Creators.setPage({ page: page + 1 })),
+        onSearchChange: value => filterManager.ChangeSearch(value as string),
+        onChangePage: page => filterManager.ChangePage(page),
         onChangeRowsPerPage: perPage =>
-          dispatch(Creators.setPerPage({ per_page: perPage })),
+          filterManager.ChangeRowsPerPage(perPage),
         onColumnSortChange: (changedColumn: string, direction: string) =>
-          dispatch(
-            Creators.setOrder({
-              sort: changedColumn,
-              dir: direction.includes('desc') ? 'desc' : 'asc',
-            }),
-          ),
+          filterManager.ChangeColumnSort(changedColumn, direction),
       }}
     />
   );

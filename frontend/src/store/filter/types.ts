@@ -10,7 +10,7 @@ interface OrderType {
   dir: string | null;
 }
 
-export interface StateType {
+export interface FilterStateType {
   search: string | { value: string | null; [key: string]: any } | null;
   pagination: PaginationType;
   order: OrderType;
@@ -42,3 +42,10 @@ export interface SetOrderAction extends AnyAction {
 }
 
 export type SetResetAction = AnyAction;
+
+export type FilterActions =
+  | SetSearchAction
+  | SetPageAction
+  | SetPerPageAction
+  | SetOrderAction
+  | SetResetAction;

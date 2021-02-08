@@ -5,14 +5,14 @@ import {
   SetPerPageAction,
   SetResetAction,
   SetSearchAction,
-  StateType,
+  FilterStateType,
 } from './types';
 
-export const INITIAL_STATE: StateType = {
+export const INITIAL_STATE: FilterStateType = {
   search: null,
   pagination: {
     page: 1,
-    per_page: 10,
+    per_page: 15,
   },
   order: {
     sort: null,
@@ -43,7 +43,10 @@ export const { Types, Creators } = createActions<
   setReset: [],
 });
 
-function SetSearch(state = INITIAL_STATE, action: SetSearchAction): StateType {
+function SetSearch(
+  state = INITIAL_STATE,
+  action: SetSearchAction,
+): FilterStateType {
   return {
     ...state,
     search: action.payload.search,
@@ -54,7 +57,10 @@ function SetSearch(state = INITIAL_STATE, action: SetSearchAction): StateType {
   };
 }
 
-function SetPage(state = INITIAL_STATE, action: SetPageAction): StateType {
+function SetPage(
+  state = INITIAL_STATE,
+  action: SetPageAction,
+): FilterStateType {
   return {
     ...state,
     pagination: {
@@ -67,7 +73,7 @@ function SetPage(state = INITIAL_STATE, action: SetPageAction): StateType {
 function SetPerPage(
   state = INITIAL_STATE,
   action: SetPerPageAction,
-): StateType {
+): FilterStateType {
   return {
     ...state,
     pagination: {
@@ -77,7 +83,10 @@ function SetPerPage(
   };
 }
 
-function SetOrder(state = INITIAL_STATE, action: SetOrderAction): StateType {
+function SetOrder(
+  state = INITIAL_STATE,
+  action: SetOrderAction,
+): FilterStateType {
   return {
     ...state,
     pagination: {
@@ -91,7 +100,7 @@ function SetOrder(state = INITIAL_STATE, action: SetOrderAction): StateType {
   };
 }
 
-function SetReset(state = INITIAL_STATE, action: SetResetAction): StateType {
+function SetReset(): FilterStateType {
   return { ...INITIAL_STATE, search: { value: null, update: true } };
 }
 
