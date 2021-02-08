@@ -8,7 +8,7 @@ import { merge, omit, cloneDeep } from 'lodash';
 import { MuiThemeProvider, useMediaQuery, useTheme } from '@material-ui/core';
 // import { debounce } from 'lodash';
 
-import DebounceTableSearch from './DebouncedTableSearch.js';
+import { debounceSearchRender } from './DebounceSearchRender.js';
 
 const defaultOptions: MUIDataTableOptions = {
   print: false,
@@ -59,21 +59,22 @@ const defaultOptions: MUIDataTableOptions = {
   //   },
   //   300,
   // ),
-  customSearchRender: (
-    searchText: string,
-    handleSearch: any,
-    hideSearch: any,
-    options: any,
-  ) => {
-    return (
-      <DebounceTableSearch
-        searchText={searchText}
-        onSearch={handleSearch}
-        onHide={hideSearch}
-        options={options}
-      />
-    );
-  },
+  // customSearchRender: (
+  //   searchText: string,
+  //   handleSearch: any,
+  //   hideSearch: any,
+  //   options: any,
+  // ) => {
+  //   return (
+  //     <DebounceTableSearch
+  //       searchText={searchText}
+  //       onSearch={handleSearch}
+  //       onHide={hideSearch}
+  //       options={options}
+  //     />
+  //   );
+  // },
+  customSearchRender: debounceSearchRender(500),
 };
 
 export interface TableColumn extends MUIDataTableColumn {
