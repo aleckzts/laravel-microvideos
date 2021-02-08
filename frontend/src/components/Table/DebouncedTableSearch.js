@@ -34,6 +34,7 @@ const TableSearch = ({ options, searchText, onSearch, onHide }) => {
   const classes = useStyles();
 
   const handleTextChange = event => {
+    console.log(event.target.value)
     onSearch(event.target.value);
   };
 
