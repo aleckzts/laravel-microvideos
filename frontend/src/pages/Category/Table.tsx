@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
 import { IconButton } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import EditIcon from '@material-ui/icons/Edit';
+import { useSnackbar } from 'notistack';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
 import Table, { TableColumn } from '../../components/Table';
 import { CategoryType } from './Form';
 import CategoryApi from '../../services/CategoryApi';
 import FilterResetButton from '../../components/Table/FilterResetButton';
+import reducer, { Creators, INITIAL_STATE } from '../../store/search';
 
 const columsDefinition: TableColumn[] = [
   {
@@ -68,41 +70,20 @@ const columsDefinition: TableColumn[] = [
   },
 ];
 
-interface PaginationType {
-  page: number;
-  total: number;
-  per_page: number;
-}
-
-interface OrderType {
-  sort: string | null;
-  dir: string | null;
-}
-
-interface SearchStateType {
-  search: string;
-  pagination: PaginationType;
-  order: OrderType;
-}
-
 const CategoryTable: React.FC = () => {
-  const initialSearchState: SearchStateType = {
-    search: '',
-    pagination: {
-      page: 1,
-      total: 0,
-      per_page: 10,
-    },
-    order: {
-      sort: null,
-      dir: null,
-    },
-  };
+  const snackbar = useSnackbar();
   const [data, setData] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchState, setSearchState] = useState<SearchStateType>(
-    initialSearchState,
-  );
+  const [searchState, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  function cleanSearchText(text: any): string {
+    let newText = text;
+    if (text && text.value !== undefined) {
+      newText = text.value;
+    }
+    return newText;
+  }
 
   useEffect(() => {
     let isCancelled = false;
@@ -112,7 +93,7 @@ const CategoryTable: React.FC = () => {
       try {
         const response = await CategoryApi.list({
           queryParams: {
-            search: searchState.search,
+            search: cleanSearchText(searchState.search),
             page: searchState.pagination.page,
             per_page: searchState.pagination.per_page,
             sort: searchState.order.sort,
@@ -121,16 +102,23 @@ const CategoryTable: React.FC = () => {
         });
         if (!isCancelled) {
           setData(response.data.data);
-          setSearchState(prevState => ({
-            ...prevState,
-            pagination: {
-              ...prevState.pagination,
-              total: response.data.meta.total,
-            },
-          }));
+          setTotalRecords(response.data.meta.total);
+          // setSearchState(prevState => ({
+          //   ...prevState,
+          //   pagination: {
+          //     ...prevState.pagination,
+          //     total: response.data.meta.total,
+          //   },
+          // }));
         }
       } catch (err) {
         console.log(err);
+        if (CategoryApi.isRequestCancelled(err)) {
+          return;
+        }
+        snackbar.enqueueSnackbar('Não foi possível carregar as informações', {
+          variant: 'error',
+        });
       } finally {
         setLoading(false);
       }
@@ -145,6 +133,7 @@ const CategoryTable: React.FC = () => {
     searchState.pagination.page,
     searchState.pagination.per_page,
     searchState.order,
+    snackbar,
   ]);
 
   return (
@@ -155,40 +144,27 @@ const CategoryTable: React.FC = () => {
       loading={loading}
       options={{
         serverSide: true,
-        searchText: searchState.search,
+        searchText: searchState.search as string,
         page: searchState.pagination.page - 1,
         rowsPerPage: searchState.pagination.per_page,
-        count: searchState.pagination.total,
+        count: totalRecords,
         customToolbar: () => (
           <FilterResetButton
-            handleClick={() => setSearchState(initialSearchState)}
+            handleClick={() => dispatch(Creators.setReset())}
           />
         ),
         onSearchChange: value =>
-          value &&
-          setSearchState({
-            ...searchState,
-            search: value,
-            pagination: { ...searchState.pagination, page: 1 },
-          }),
-        onChangePage: page =>
-          setSearchState({
-            ...searchState,
-            pagination: { ...searchState.pagination, page: page + 1 },
-          }),
+          dispatch(Creators.setSearch({ search: value as string })),
+        onChangePage: page => dispatch(Creators.setPage({ page: page + 1 })),
         onChangeRowsPerPage: perPage =>
-          setSearchState({
-            ...searchState,
-            pagination: { ...searchState.pagination, per_page: perPage + 1 },
-          }),
+          dispatch(Creators.setPerPage({ per_page: perPage })),
         onColumnSortChange: (changedColumn: string, direction: string) =>
-          setSearchState({
-            ...searchState,
-            order: {
+          dispatch(
+            Creators.setOrder({
               sort: changedColumn,
               dir: direction.includes('desc') ? 'desc' : 'asc',
-            },
-          }),
+            }),
+          ),
       }}
     />
   );

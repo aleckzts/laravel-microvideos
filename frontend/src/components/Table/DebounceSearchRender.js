@@ -44,9 +44,9 @@ const defaultStyles = theme => ({
 });
 
 class _DebounceTableSearch extends React.Component {
-  handleTextChangeWrapper = debouncedSearch => {
+  handleTextChangeWrapper = _debouncedSearch => {
     return function(event) {
-      debouncedSearch(event.target.value);
+      _debouncedSearch(event.target.value);
     };
   };
 

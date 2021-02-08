@@ -6,7 +6,6 @@ import MUIDataTable, {
 } from 'mui-datatables';
 import { merge, omit, cloneDeep } from 'lodash';
 import { MuiThemeProvider, useMediaQuery, useTheme } from '@material-ui/core';
-// import { debounce } from 'lodash';
 
 import { debounceSearchRender } from './DebounceSearchRender.js';
 
