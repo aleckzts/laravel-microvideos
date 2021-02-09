@@ -9,6 +9,12 @@ import { FilterActions, FilterStateType } from '../store/filter/types';
 import Yup from '../yupBR';
 import { TableComponent } from '../components/Table';
 
+interface ExtraFilter {
+  getStateFromURL: (queryParams: URLSearchParams) => any;
+  formatSearchParams: (debouncedState: FilterStateType) => any;
+  createValidationSchema: () => any;
+}
+
 interface FilterManagerOptions {
   columns: MUIDataTableColumn[];
   rowsPerPage: number;
@@ -16,6 +22,7 @@ interface FilterManagerOptions {
   debounceWait: number;
   history: History;
   tableRef: React.MutableRefObject<TableComponent>;
+  extraFilter?: ExtraFilter;
 }
 
 export class FilterManager {
@@ -37,6 +44,8 @@ export class FilterManager {
 
   tableRef: React.MutableRefObject<TableComponent>;
 
+  extraFilter?: ExtraFilter;
+
   constructor(options: FilterManagerOptions) {
     const {
       columns,
@@ -44,6 +53,7 @@ export class FilterManager {
       rowsPerPageOptions,
       history,
       tableRef,
+      extraFilter,
     } = options;
 
     this.columns = columns;
@@ -52,6 +62,7 @@ export class FilterManager {
     this.history = history;
     this.createValidationSchema();
     this.tableRef = tableRef;
+    this.extraFilter = extraFilter;
   }
 
   private resetTablePagination() {
@@ -81,6 +92,10 @@ export class FilterManager {
     this.resetTablePagination();
   }
 
+  ChangeExtraFilter(data: any) {
+    this.dispatch(Creators.updateExtraFilter(data));
+  }
+
   resetFilter() {
     const INITIAL_STATE = {
       ...this.schema.cast({}),
@@ -98,7 +113,7 @@ export class FilterManager {
     return newText;
   }
 
-  private formatURLParams() {
+  private formatSearchParams() {
     const search = this.cleanSearchText(this.debouncedState.search);
     return {
       ...(search && search !== '' && { search }),
@@ -112,13 +127,15 @@ export class FilterManager {
         sort: this.debouncedState.order.sort,
         dir: this.debouncedState.order.dir,
       }),
+      ...(this.extraFilter &&
+        this.extraFilter.formatSearchParams(this.debouncedState)),
     };
   }
 
   replaceHistory() {
     this.history.replace({
       pathname: this.history.location.pathname,
-      search: `?${new URLSearchParams(this.formatURLParams() as any)}`,
+      search: `?${new URLSearchParams(this.formatSearchParams() as any)}`,
       state: this.debouncedState,
     });
   }
@@ -133,7 +150,7 @@ export class FilterManager {
 
     this.history.push({
       pathname: this.history.location.pathname,
-      search: `?${new URLSearchParams(this.formatURLParams() as any)}`,
+      search: `?${new URLSearchParams(this.formatSearchParams() as any)}`,
       state: {
         ...this.debouncedState,
         search: this.cleanSearchText(this.debouncedState.search),
@@ -182,6 +199,9 @@ export class FilterManager {
           )
           .default(null),
       }),
+      ...(this.extraFilter && {
+        extraFilter: this.extraFilter.createValidationSchema(),
+      }),
     });
   }
 
@@ -199,14 +219,14 @@ export class FilterManager {
         sort: queryParams.get('sort'),
         dir: queryParams.get('dir'),
       },
+      ...(this.extraFilter && {
+        extraFilter: this.extraFilter.getStateFromURL(queryParams),
+      }),
     });
   }
 }
 
 function useFilter(options: Omit<FilterManagerOptions, 'history'>) {
-  // const useFilter = forwardRef<React.FC, Omit<FilterManagerOptions, 'history'>>(props, ref) => {
-  // const options = props;
-
   const history = useHistory();
   const filterManager = new FilterManager({ ...options, history });
   const [filterState, dispatch] = useReducer<
@@ -224,6 +244,7 @@ function useFilter(options: Omit<FilterManagerOptions, 'history'>) {
   }, []);
 
   return {
+    columns: filterManager.columns,
     filterManager,
     debouncedFilterState,
     filterState,

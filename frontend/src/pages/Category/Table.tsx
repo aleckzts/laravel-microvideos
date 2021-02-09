@@ -14,25 +14,32 @@ import CategoryApi from '../../services/CategoryApi';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import useFilter from '../../hooks/useFilter';
 
-const columsDefinition: TableColumn[] = [
+const columnsDefinition: TableColumn[] = [
   {
     name: 'id',
     label: 'ID',
     width: '30%',
     options: {
       sort: false,
+      filter: false,
     },
   },
   {
     name: 'name',
     label: 'Nome',
     width: '43%',
+    options: {
+      filter: false,
+    },
   },
   {
     name: 'is_active',
     label: 'Ativo',
     width: '4%',
     options: {
+      filterOptions: {
+        names: ['Sim', 'Não'],
+      },
       customBodyRender(value) {
         return value ? <BadgeYes /> : <BadgeNo />;
       },
@@ -43,6 +50,7 @@ const columsDefinition: TableColumn[] = [
     label: 'Criado em',
     width: '10%',
     options: {
+      filter: false,
       customBodyRender(value) {
         return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>;
       },
@@ -55,6 +63,7 @@ const columsDefinition: TableColumn[] = [
     padding: '0 16px',
     options: {
       sort: false,
+      filter: false,
       customBodyRender(_, tableMeta) {
         return (
           <IconButton
@@ -87,7 +96,7 @@ const CategoryTable: React.FC = () => {
     totalRecords,
     setTotalRecords,
   } = useFilter({
-    columns: columsDefinition,
+    columns: columnsDefinition,
     debounceWait: debounceTime,
     rowsPerPage,
     rowsPerPageOptions,
@@ -142,7 +151,7 @@ const CategoryTable: React.FC = () => {
   return (
     <Table
       title="Listagem de Categorias"
-      columns={columsDefinition}
+      columns={columnsDefinition}
       data={data}
       loading={loading}
       debounceWait={debounceTime}

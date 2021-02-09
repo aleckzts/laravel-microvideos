@@ -13,24 +13,29 @@ import { GenreType } from './Form';
 import GenreApi from '../../services/GenreApi';
 import useFilter from '../../hooks/useFilter';
 import FilterResetButton from '../../components/Table/FilterResetButton';
+import Yup from '../../yupBR';
 
 type categoryInterface = {
   name: string;
 };
 
-const columsDefinition: TableColumn[] = [
+const columnsDefinition: TableColumn[] = [
   {
     name: 'id',
     label: 'ID',
     width: '30%',
     options: {
       sort: false,
+      filter: false,
     },
   },
   {
     name: 'name',
     label: 'Nome',
     width: '23%',
+    options: {
+      filter: false,
+    },
   },
   {
     name: 'categories',
@@ -50,6 +55,9 @@ const columsDefinition: TableColumn[] = [
     label: 'Ativo',
     width: '4%',
     options: {
+      filterOptions: {
+        names: ['Sim', 'Não'],
+      },
       customBodyRender(value) {
         return value ? <BadgeYes /> : <BadgeNo />;
       },
@@ -60,6 +68,7 @@ const columsDefinition: TableColumn[] = [
     label: 'Criado em',
     width: '10%',
     options: {
+      filter: false,
       customBodyRender(value) {
         return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>;
       },
@@ -72,6 +81,7 @@ const columsDefinition: TableColumn[] = [
     padding: '0 16px',
     options: {
       sort: false,
+      filter: false,
       customBodyRender(_, tableMeta) {
         return (
           <IconButton
@@ -104,11 +114,37 @@ const GenreTable: React.FC = () => {
     totalRecords,
     setTotalRecords,
   } = useFilter({
-    columns: columsDefinition,
+    columns: columnsDefinition,
     debounceWait: debounceTime,
     rowsPerPage,
     rowsPerPageOptions,
     tableRef,
+    extraFilter: {
+      createValidationSchema: () => {
+        return Yup.object().shape({
+          categories: Yup.mixed()
+            .nullable()
+            .transform(value => {
+              return !value || value === '' ? undefined : value.split(',');
+            })
+            .default(null),
+        });
+      },
+      formatSearchParams: debouncedState => {
+        return debouncedState.extraFilter
+          ? {
+              ...(debouncedState.extraFilter.categories && {
+                categories: debouncedState.extraFilter.categories.join(','),
+              }),
+            }
+          : undefined;
+      },
+      getStateFromURL: queryParams => {
+        return {
+          categories: queryParams.get('categories'),
+        };
+      },
+    },
   });
 
   useEffect(() => {
@@ -159,7 +195,7 @@ const GenreTable: React.FC = () => {
   return (
     <Table
       title="Listagem de Gêneros"
-      columns={columsDefinition}
+      columns={columnsDefinition}
       data={data}
       loading={loading}
       debounceWait={debounceTime}

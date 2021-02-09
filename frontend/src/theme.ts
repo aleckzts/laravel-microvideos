@@ -111,6 +111,12 @@ const theme = createMuiTheme({
         color: (palette.primary as SimplePaletteColorOptions).main,
       },
     },
+    // @ts-ignore
+    MUIDataTableFilterList: {
+      root: {
+        marginBottom: '16px',
+      },
+    },
   },
 });
 
