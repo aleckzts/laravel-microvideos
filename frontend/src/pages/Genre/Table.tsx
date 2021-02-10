@@ -14,6 +14,8 @@ import GenreApi from '../../services/GenreApi';
 import useFilter from '../../hooks/useFilter';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import Yup from '../../yupBR';
+import CategoryApi from '../../services/CategoryApi';
+import { CategoryType } from '../Category/Form';
 
 type categoryInterface = {
   name: string;
@@ -38,19 +40,6 @@ const columnsDefinition: TableColumn[] = [
     },
   },
   {
-    name: 'categories',
-    label: 'Categorias',
-    width: '20%',
-    options: {
-      customBodyRender(value: unknown) {
-        const categories = value as Array<categoryInterface>;
-        return (
-          <span>{categories.map(category => category.name).join(', ')}</span>
-        );
-      },
-    },
-  },
-  {
     name: 'is_active',
     label: 'Ativo',
     width: '4%',
@@ -60,6 +49,23 @@ const columnsDefinition: TableColumn[] = [
       },
       customBodyRender(value) {
         return value ? <BadgeYes /> : <BadgeNo />;
+      },
+    },
+  },
+  {
+    name: 'categories',
+    label: 'Categorias',
+    width: '20%',
+    options: {
+      filterType: 'multiselect',
+      filterOptions: {
+        names: [],
+      },
+      customBodyRender(value: unknown) {
+        const categories = value as Array<categoryInterface>;
+        return (
+          <span>{categories.map(category => category.name).join(', ')}</span>
+        );
       },
     },
   },
@@ -101,6 +107,7 @@ const GenreTable: React.FC = () => {
   const snackbar = useSnackbar();
   const isCancelled = useRef(false);
   const [data, setData] = useState<GenreType[]>([]);
+  // const [categories, setCategories] = useState<CategoryType[]>();
   const [loading, setLoading] = useState(false);
   const debounceTime = 300;
   const rowsPerPage = 15;
@@ -108,6 +115,7 @@ const GenreTable: React.FC = () => {
   const tableRef = useRef() as React.MutableRefObject<TableComponent>;
 
   const {
+    columns,
     filterManager,
     debouncedFilterState,
     filterState,
@@ -147,6 +155,53 @@ const GenreTable: React.FC = () => {
     },
   });
 
+  const indexColumnCategories = columns.findIndex(c => c.name === 'categories');
+  const columnCategories = columns[indexColumnCategories];
+  const categoriesFilterValue =
+    filterState.extraFilter && filterState.extraFilter.categories;
+  (columnCategories.options as any).filterList = categoriesFilterValue || [];
+
+  const serverSideFilterList = columns.map(column => []);
+  if (categoriesFilterValue) {
+    serverSideFilterList[indexColumnCategories] = categoriesFilterValue;
+  }
+
+  useEffect(() => {
+    isCancelled.current = false;
+
+    async function getData(): Promise<void> {
+      setLoading(true);
+      try {
+        const response = await CategoryApi.list({
+          queryParams: {
+            all: '',
+          },
+        });
+        if (!isCancelled.current) {
+          // setCategories(response.data.data);
+          (columnCategories.options as any).filterOptions.names = response.data.data.map(
+            category => category.name,
+          );
+        }
+      } catch (err) {
+        console.log(err);
+        if (CategoryApi.isRequestCancelled(err)) {
+          return;
+        }
+        snackbar.enqueueSnackbar('Não foi possível carregar as categorias', {
+          variant: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getData();
+    return () => {
+      isCancelled.current = true;
+    };
+  }, [snackbar, columnCategories.options]);
+
   useEffect(() => {
     isCancelled.current = false;
     filterManager.pushHistory();
@@ -156,11 +211,15 @@ const GenreTable: React.FC = () => {
       try {
         const response = await GenreApi.list({
           queryParams: {
-            search: filterManager.cleanSearchText(filterState.search),
-            page: filterState.pagination.page,
-            per_page: filterState.pagination.per_page,
-            sort: filterState.order.sort,
-            dir: filterState.order.dir,
+            search: filterManager.cleanSearchText(debouncedFilterState.search),
+            page: debouncedFilterState.pagination.page,
+            per_page: debouncedFilterState.pagination.per_page,
+            sort: debouncedFilterState.order.sort,
+            dir: debouncedFilterState.order.dir,
+            ...(debouncedFilterState.extraFilter &&
+              debouncedFilterState.extraFilter.categories && {
+                categories: debouncedFilterState.extraFilter.categories.toString(),
+              }),
           },
         });
         if (!isCancelled.current) {
@@ -185,11 +244,13 @@ const GenreTable: React.FC = () => {
       isCancelled.current = true;
     };
   }, [
-    filterManager.cleanSearchText(debouncedFilterState.search),
+    debouncedFilterState.search,
     debouncedFilterState.pagination.page,
     debouncedFilterState.pagination.per_page,
     debouncedFilterState.order,
-    // getData,
+    debouncedFilterState.extraFilter,
+    snackbar,
+    setTotalRecords,
   ]);
 
   return (
@@ -207,6 +268,14 @@ const GenreTable: React.FC = () => {
         rowsPerPage: filterState.pagination.per_page,
         rowsPerPageOptions,
         count: totalRecords,
+        onFilterChange: (column, filterList) => {
+          const columnIndex = columns.findIndex(c => c.name === column);
+          filterManager.ChangeExtraFilter({
+            [column as string]: filterList[columnIndex].length
+              ? filterList[columnIndex]
+              : null,
+          });
+        },
         customToolbar: () => (
           <FilterResetButton handleClick={() => filterManager.resetFilter()} />
         ),

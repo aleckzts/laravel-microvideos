@@ -112,11 +112,11 @@ const CategoryTable: React.FC = () => {
       try {
         const response = await CategoryApi.list({
           queryParams: {
-            search: filterManager.cleanSearchText(filterState.search),
-            page: filterState.pagination.page,
-            per_page: filterState.pagination.per_page,
-            sort: filterState.order.sort,
-            dir: filterState.order.dir,
+            search: filterManager.cleanSearchText(debouncedFilterState.search),
+            page: debouncedFilterState.pagination.page,
+            per_page: debouncedFilterState.pagination.per_page,
+            sort: debouncedFilterState.order.sort,
+            dir: debouncedFilterState.order.dir,
           },
         });
         if (!isCancelled.current) {
@@ -141,11 +141,12 @@ const CategoryTable: React.FC = () => {
       isCancelled.current = true;
     };
   }, [
-    filterManager.cleanSearchText(debouncedFilterState.search),
+    debouncedFilterState.search,
     debouncedFilterState.pagination.page,
     debouncedFilterState.pagination.per_page,
     debouncedFilterState.order,
-    // getData,
+    snackbar,
+    setTotalRecords,
   ]);
 
   return (

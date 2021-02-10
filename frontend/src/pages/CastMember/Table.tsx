@@ -164,14 +164,16 @@ const CastMemberTable: React.FC = () => {
       try {
         const response = await CastMemberApi.list({
           queryParams: {
-            search: filterManager.cleanSearchText(filterState.search),
-            page: filterState.pagination.page,
-            per_page: filterState.pagination.per_page,
-            sort: filterState.order.sort,
-            dir: filterState.order.dir,
-            ...(filterState.extraFilter &&
-              filterState.extraFilter.type && {
-                type: invert(castMemberType)[filterState.extraFilter.type],
+            search: filterManager.cleanSearchText(debouncedFilterState.search),
+            page: debouncedFilterState.pagination.page,
+            per_page: debouncedFilterState.pagination.per_page,
+            sort: debouncedFilterState.order.sort,
+            dir: debouncedFilterState.order.dir,
+            ...(debouncedFilterState.extraFilter &&
+              debouncedFilterState.extraFilter.type && {
+                type: invert(castMemberType)[
+                  debouncedFilterState.extraFilter.type
+                ],
               }),
           },
         });
@@ -197,12 +199,13 @@ const CastMemberTable: React.FC = () => {
       isCancelled.current = true;
     };
   }, [
-    filterManager.cleanSearchText(debouncedFilterState.search),
+    debouncedFilterState.search,
     debouncedFilterState.pagination.page,
     debouncedFilterState.pagination.per_page,
     debouncedFilterState.order,
-    JSON.stringify(debouncedFilterState.extraFilter),
-    // getData,
+    debouncedFilterState.extraFilter,
+    snackbar,
+    setTotalRecords,
   ]);
 
   return (
