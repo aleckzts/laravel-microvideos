@@ -26,6 +26,7 @@ const Menu: React.FC = () => {
     'categories.list': 'Categorias',
     'cast_members.list': 'Membros de elenco',
     'genres.list': 'Gêneros',
+    'videos.list': 'Vídeos',
   };
 
   const menuRoutes = routes.filter(route =>

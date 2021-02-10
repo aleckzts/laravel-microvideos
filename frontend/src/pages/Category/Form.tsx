@@ -143,6 +143,7 @@ const CategoryForm: React.FC = () => {
             color="primary"
             onChange={() => setValue('is_active', !getValues().is_active)}
             checked={watch('is_active')}
+            disabled={loading}
           />
         }
         label="Ativo?"
