@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Category;
 use App\Models\Genre;
+use App\Models\CastMember;
 use App\Models\Traits\UploadFiles;
 
 class Video extends Model
@@ -40,6 +41,8 @@ class Video extends Model
         'duration' => 'integer'
     ];
     public $incrementing = false;
+
+    protected $hidden = ['thumb_file', 'banner_file', 'trailer_file', 'video_file'];
 
     public static $fileFields = ['video_file', 'thumb_file','banner_file', 'trailer_file'];
 
@@ -92,6 +95,9 @@ class Video extends Model
         if (isset($attributes['genres_id'])) {
             $video->genres()->sync($attributes['genres_id']);
         }
+        if (isset($attributes['cast_members_id'])) {
+            $video->castMembers()->sync($attributes['cast_members_id']);
+        }
     }
 
     public function categories() {
@@ -100,6 +106,10 @@ class Video extends Model
 
     public function genres() {
         return $this->belongsToMany(Genre::class)->withTrashed();
+    }
+
+    public function castMembers() {
+        return $this->belongsToMany(CastMember::class)->withTrashed();
     }
 
     protected function uploadDir()
