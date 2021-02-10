@@ -50,7 +50,7 @@ class VideosTableSeeder extends Seeder
 
     public function fetchRelations()
     {
-        $subGenres = $this->allGenres->random(5)->load('categories');
+        $subGenres = $this->allGenres->random(3)->load('categories');
         $categoriesId = [];
         foreach ($subGenres as $genre) {
             array_push($categoriesId, ...$genre->categories->pluck('id')->toArray());
