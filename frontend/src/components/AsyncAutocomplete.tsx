@@ -23,6 +23,7 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
   TextFieldProps,
   AutocompleteProps,
 }) => {
+  const freeSolo = AutocompleteProps?.freeSolo || false;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState<string>();
@@ -44,8 +45,8 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
   > = {
     loading,
     loadingText: 'Carregando...',
-    ...AutocompleteProps,
     freeSolo: true,
+    ...AutocompleteProps,
     open,
     options,
     noOptionsText: 'Nenhum item encontrado',
@@ -88,10 +89,10 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
       }
     }
 
-    if (searchText) {
+    if (searchText || !freeSolo) {
       getData();
     }
-  }, [fetchOptions, searchText]);
+  }, [fetchOptions, searchText, freeSolo]);
 
   return <Autocomplete {...defaultAutocompleteProps} />;
 };

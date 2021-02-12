@@ -140,9 +140,13 @@ const VideoForm: React.FC = () => {
   }
 
   useEffect(() => {
-    ['rating', 'opened', ...Object.keys(VideoFileFieldsMap)].forEach(name =>
-      register({ name }),
-    );
+    [
+      'rating',
+      'opened',
+      'genres',
+      'categories',
+      ...Object.keys(VideoFileFieldsMap),
+    ].forEach(name => register({ name }));
   }, [register]);
 
   useEffect(() => {
@@ -235,10 +239,21 @@ const VideoForm: React.FC = () => {
           Gêneros e categorias
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <GenreField />
+              <GenreField
+                genres={watch('genres')}
+                setGenres={value =>
+                  setValue('genres', value, { shouldValidate: true })
+                }
+              />
             </Grid>
             <Grid item xs={12} md={6}>
-              <CategoryField />
+              <CategoryField
+                categories={watch('categories')}
+                setCategories={value =>
+                  setValue('categories', value, { shouldValidate: true })
+                }
+                genres={watch('genres')}
+              />
             </Grid>
           </Grid>
         </Grid>
