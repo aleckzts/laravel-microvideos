@@ -14,6 +14,9 @@ import useFilter from '../../hooks/useFilter';
 import { VideoType } from './Form';
 import { CategoryType } from '../Category/Form';
 import { GenreType } from '../Genre/Form';
+import Yup from '../../yupBR';
+import CategoryApi from '../../services/CategoryApi';
+import GenreApi from '../../services/GenreApi';
 
 const columnsDefinition: TableColumn[] = [
   {
@@ -89,7 +92,7 @@ const columnsDefinition: TableColumn[] = [
           <IconButton
             color="secondary"
             component={Link}
-            to={`/categories/${tableMeta.rowData[0]}/edit`}
+            to={`/videos/${tableMeta.rowData[0]}/edit`}
           >
             <EditIcon fontSize="inherit" />
           </IconButton>
@@ -110,6 +113,7 @@ const VideoTable: React.FC = () => {
   const tableRef = useRef() as React.MutableRefObject<TableComponent>;
 
   const {
+    columns,
     filterManager,
     debouncedFilterState,
     filterState,
@@ -121,7 +125,133 @@ const VideoTable: React.FC = () => {
     rowsPerPage,
     rowsPerPageOptions,
     tableRef,
+    extraFilter: {
+      createValidationSchema: () => {
+        return Yup.object().shape({
+          genres: Yup.mixed()
+            .nullable()
+            .transform(value => {
+              return !value || value === '' ? undefined : value.split(',');
+            })
+            .default(null),
+          categories: Yup.mixed()
+            .nullable()
+            .transform(value => {
+              return !value || value === '' ? undefined : value.split(',');
+            })
+            .default(null),
+        });
+      },
+      formatSearchParams: debouncedState => {
+        return debouncedState.extraFilter
+          ? {
+              ...(debouncedState.extraFilter.categories && {
+                categories: debouncedState.extraFilter.categories.join(','),
+              }),
+              ...(debouncedState.extraFilter.genres && {
+                genres: debouncedState.extraFilter.genres.join(','),
+              }),
+            }
+          : undefined;
+      },
+      getStateFromURL: queryParams => {
+        return {
+          genres: queryParams.get('genres'),
+          categories: queryParams.get('categories'),
+        };
+      },
+    },
   });
+
+  const indexColumnCategories = columns.findIndex(c => c.name === 'categories');
+  const columnCategories = columns[indexColumnCategories];
+  const categoriesFilterValue =
+    filterState.extraFilter && filterState.extraFilter.categories;
+  (columnCategories.options as any).filterList = categoriesFilterValue || [];
+
+  const indexColumnGenres = columns.findIndex(c => c.name === 'genres');
+  const columnGenres = columns[indexColumnGenres];
+  const genresFilterValue =
+    filterState.extraFilter && filterState.extraFilter.genres;
+  (columnGenres.options as any).filterList = genresFilterValue || [];
+
+  const serverSideFilterList = columns.map(column => []);
+  if (categoriesFilterValue) {
+    serverSideFilterList[indexColumnCategories] = categoriesFilterValue;
+  }
+  if (genresFilterValue) {
+    serverSideFilterList[indexColumnGenres] = genresFilterValue;
+  }
+
+  useEffect(() => {
+    isCancelled.current = false;
+
+    async function getData(): Promise<void> {
+      setLoading(true);
+      try {
+        const response = await GenreApi.list({
+          queryParams: {
+            all: '',
+          },
+        });
+        if (!isCancelled.current) {
+          (columnGenres.options as any).filterOptions.names = response.data.data.map(
+            category => category.name,
+          );
+        }
+      } catch (err) {
+        console.log(err);
+        if (GenreApi.isRequestCancelled(err)) {
+          return;
+        }
+        snackbar.enqueueSnackbar('Não foi possível carregar od gêneros', {
+          variant: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getData();
+    return () => {
+      isCancelled.current = true;
+    };
+  }, [snackbar, columnGenres.options]);
+
+  useEffect(() => {
+    isCancelled.current = false;
+
+    async function getData(): Promise<void> {
+      setLoading(true);
+      try {
+        const response = await CategoryApi.list({
+          queryParams: {
+            all: '',
+          },
+        });
+        if (!isCancelled.current) {
+          (columnCategories.options as any).filterOptions.names = response.data.data.map(
+            category => category.name,
+          );
+        }
+      } catch (err) {
+        console.log(err);
+        if (CategoryApi.isRequestCancelled(err)) {
+          return;
+        }
+        snackbar.enqueueSnackbar('Não foi possível carregar as categorias', {
+          variant: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getData();
+    return () => {
+      isCancelled.current = true;
+    };
+  }, [snackbar, columnCategories.options]);
 
   useEffect(() => {
     isCancelled.current = false;
@@ -137,6 +267,14 @@ const VideoTable: React.FC = () => {
             per_page: debouncedFilterState.pagination.per_page,
             sort: debouncedFilterState.order.sort,
             dir: debouncedFilterState.order.dir,
+            ...(debouncedFilterState.extraFilter &&
+              debouncedFilterState.extraFilter.genres && {
+                genres: debouncedFilterState.extraFilter.genres.toString(),
+              }),
+            ...(debouncedFilterState.extraFilter &&
+              debouncedFilterState.extraFilter.categories && {
+                categories: debouncedFilterState.extraFilter.categories.toString(),
+              }),
           },
         });
         if (!isCancelled.current) {
@@ -165,6 +303,7 @@ const VideoTable: React.FC = () => {
     debouncedFilterState.pagination.page,
     debouncedFilterState.pagination.per_page,
     debouncedFilterState.order,
+    debouncedFilterState.extraFilter,
     snackbar,
     setTotalRecords,
   ]);
@@ -184,6 +323,14 @@ const VideoTable: React.FC = () => {
         rowsPerPage: filterState.pagination.per_page,
         rowsPerPageOptions,
         count: totalRecords,
+        onFilterChange: (column, filterList) => {
+          const columnIndex = columns.findIndex(c => c.name === column);
+          filterManager.ChangeExtraFilter({
+            [column as string]: filterList[columnIndex].length
+              ? filterList[columnIndex]
+              : null,
+          });
+        },
         customToolbar: () => (
           <FilterResetButton handleClick={() => filterManager.resetFilter()} />
         ),
