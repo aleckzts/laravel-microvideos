@@ -25,6 +25,8 @@ import { CategoryType } from '../../Category/Form';
 import { CastMemberType } from '../../CastMember/Form';
 import RatingField from './RatingField';
 import UploadField from './UploadField';
+import GenreField from './GenreField';
+import CategoryField from './CategoryField';
 
 export interface PageParams {
   id: string;
@@ -231,6 +233,14 @@ const VideoForm: React.FC = () => {
           Elenco
           <br />
           Gêneros e categorias
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <GenreField />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <CategoryField />
+            </Grid>
+          </Grid>
         </Grid>
         <Grid item xs={12} md={6}>
           <RatingField

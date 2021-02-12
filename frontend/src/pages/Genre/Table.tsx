@@ -15,7 +15,7 @@ import useFilter from '../../hooks/useFilter';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import Yup from '../../yupBR';
 import CategoryApi from '../../services/CategoryApi';
-import { CategoryType } from '../Category/Form';
+// import { CategoryType } from '../Category/Form';
 
 type categoryInterface = {
   name: string;
