@@ -8,9 +8,11 @@ import {
   TextField,
   TextFieldProps as _TextFieldProps,
 } from '@material-ui/core';
+import { useDebounce } from 'use-debounce/lib';
 
 interface AsyncAutocompleteProps {
   fetchOptions: (searchText: any) => Promise<any[]>;
+  debounceTime?: number;
   TextFieldProps?: _TextFieldProps;
   AutocompleteProps?: Omit<
     Omit<_AutocompleteProps<string, true, true, true>, 'renderInput'>,
@@ -20,6 +22,7 @@ interface AsyncAutocompleteProps {
 
 const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
   fetchOptions,
+  debounceTime = 300,
   TextFieldProps,
   AutocompleteProps,
 }) => {
@@ -27,6 +30,7 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState<string>();
+  const [debounceSearchText] = useDebounce(searchText, debounceTime);
   const [options, setOptions] = useState<any[]>([]);
 
   const defaultTextFieldProps: _TextFieldProps = {
@@ -46,6 +50,9 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
     loading,
     loadingText: 'Carregando...',
     freeSolo: true,
+    clearOnEscape: true,
+    clearOnBlur: true,
+    getOptionSelected: (option: any, value: any) => option.id === value.id,
     ...AutocompleteProps,
     open,
     options,
@@ -57,7 +64,7 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
       setOpen(false);
     },
     onInputChange(event, value) {
-      setSearchText(value);
+      value && setSearchText(value);
     },
     renderInput: params => (
       <TextField
@@ -80,7 +87,7 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await fetchOptions(searchText);
+        const response = await fetchOptions(debounceSearchText);
         setOptions(response);
       } catch (err) {
         console.log(err);
@@ -89,10 +96,10 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = ({
       }
     }
 
-    if (searchText || !freeSolo) {
+    if (debounceSearchText || !freeSolo) {
       getData();
     }
-  }, [fetchOptions, searchText, freeSolo]);
+  }, [fetchOptions, debounceSearchText, freeSolo]);
 
   return <Autocomplete {...defaultAutocompleteProps} />;
 };

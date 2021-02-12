@@ -71,6 +71,8 @@ const validationSchema = Yup.object().shape({
   description: Yup.string().label('Sinopse').required(),
   year_launched: Yup.number().label('Ano de lançamento').required().min(1),
   duration: Yup.number().label('Duração').required().min(1),
+  genres: Yup.array().label('Gênero').required().min(1),
+  categories: Yup.array().label('Categorias').required().min(1),
   rating: Yup.string().label('Classificação').required(),
 });
 
@@ -241,19 +243,35 @@ const VideoForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <GenreField
                 genres={watch('genres')}
-                setGenres={value =>
-                  setValue('genres', value, { shouldValidate: true })
-                }
+                setGenres={value => {
+                  setValue('genres', value, { shouldValidate: true });
+                }}
+                categories={watch('categories')}
+                setCategories={value => {
+                  setValue('categories', value, { shouldValidate: true });
+                }}
+                error={errors.genres}
+                disabled={loading}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <CategoryField
                 categories={watch('categories')}
-                setCategories={value =>
-                  setValue('categories', value, { shouldValidate: true })
-                }
+                setCategories={value => {
+                  setValue('categories', value, { shouldValidate: true });
+                }}
                 genres={watch('genres')}
+                error={errors.categories}
+                disabled={loading}
               />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              Escolha os gêneros do vídeo
+            </Grid>
+            <Grid item xs={12} md={6}>
+              Escolha pelo menos uma categoria de cada gênero
             </Grid>
           </Grid>
         </Grid>

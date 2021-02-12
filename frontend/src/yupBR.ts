@@ -11,6 +11,9 @@ yup.setLocale({
   number: {
     min: '${path} precisa ser no mínimo ${min}',
   },
+  array: {
+    min: '${path} precisa de pelo menos um item',
+  },
 });
 
 export default yup;
