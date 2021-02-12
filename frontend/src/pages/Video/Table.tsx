@@ -151,7 +151,7 @@ const CategoryTable: React.FC = () => {
 
   return (
     <Table
-      title="Listagem de Categorias"
+      title="Listagem de Videos"
       columns={columnsDefinition}
       data={data}
       loading={loading}

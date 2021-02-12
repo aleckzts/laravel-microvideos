@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Card,
+  CardContent,
   Checkbox,
   FormControlLabel,
   Grid,
+  makeStyles,
   TextField,
   Typography,
 } from '@material-ui/core';
@@ -13,13 +16,15 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
-import Yup from '../../yupBR';
-import SubmitActions from '../../components/SubmitActions';
-import DefaultForm from '../../components/DefaultForm';
-import VideoApi from '../../services/VideoApi';
-import { GenreType } from '../Genre/Form';
-import { CategoryType } from '../Category/Form';
-import { CastMemberType } from '../CastMember/Form';
+import Yup from '../../../yupBR';
+import SubmitActions from '../../../components/SubmitActions';
+import DefaultForm from '../../../components/DefaultForm';
+import VideoApi from '../../../services/VideoApi';
+import { GenreType } from '../../Genre/Form';
+import { CategoryType } from '../../Category/Form';
+import { CastMemberType } from '../../CastMember/Form';
+import RatingField from './RatingField';
+import UploadField from './UploadField';
 
 export interface PageParams {
   id: string;
@@ -51,6 +56,14 @@ export interface VideoType {
   video_file_url: string;
 }
 
+const useStyles = makeStyles(theme => ({
+  cardUpload: {
+    borderRadius: '4px',
+    backgroundColor: '#f5f5f5',
+    margin: theme.spacing(2, 0),
+  },
+}));
+
 const validationSchema = Yup.object().shape({
   title: Yup.string().label('Título').required().max(255),
   description: Yup.string().label('Sinopse').required(),
@@ -60,6 +73,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const VideoForm: React.FC = () => {
+  const classes = useStyles();
   const snackbar = useSnackbar();
   const history = useHistory();
   const { id } = useParams<PageParams>();
@@ -124,7 +138,9 @@ const VideoForm: React.FC = () => {
   }
 
   useEffect(() => {
-    register({ name: 'opened' });
+    ['rating', 'opened', ...Object.keys(VideoFileFieldsMap)].forEach(name =>
+      register({ name }),
+    );
   }, [register]);
 
   useEffect(() => {
@@ -217,10 +233,51 @@ const VideoForm: React.FC = () => {
           Gêneros e categorias
         </Grid>
         <Grid item xs={12} md={6}>
-          Classificação
+          <RatingField
+            value={watch('rating')}
+            setValue={value => setValue('rating', value)}
+            disabled={loading}
+            error={errors.rating}
+          />
           <br />
-          Uploads
-          <br />
+          <Card className={classes.cardUpload}>
+            <CardContent>
+              <Typography color="primary" variant="h6">
+                Imagens
+              </Typography>
+              <UploadField
+                accept="image/*"
+                label="Thumb"
+                setValue={value => setValue('thumb_file', value)}
+                disabled={loading}
+              />
+              <UploadField
+                accept="image/*"
+                label="Banner"
+                setValue={value => setValue('banner_file', value)}
+                disabled={loading}
+              />
+            </CardContent>
+          </Card>
+          <Card className={classes.cardUpload}>
+            <CardContent>
+              <Typography color="primary" variant="h6">
+                Videos
+              </Typography>
+              <UploadField
+                accept="video/mp4"
+                label="Thumb"
+                setValue={value => setValue('thumb_file', value)}
+                disabled={loading}
+              />
+              <UploadField
+                accept="video/mp4"
+                label="Video Principal"
+                setValue={value => setValue('video_file', value)}
+                disabled={loading}
+              />
+            </CardContent>
+          </Card>
           <FormControlLabel
             disabled={loading}
             control={

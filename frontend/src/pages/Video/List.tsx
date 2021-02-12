@@ -6,16 +6,16 @@ import AddIcon from '@material-ui/icons/Add';
 import Page from '../../components/Page';
 import CategoryTable from './Table';
 
-const CategoryList: React.FC = () => {
+const VideoList: React.FC = () => {
   return (
-    <Page title="Listagem de Categorias">
+    <Page title="Listagem de Videos">
       <Box dir="rtl" paddingBottom={2}>
         <Fab
-          title="Adicionar Categoria"
+          title="Adicionar Video"
           color="secondary"
           size="small"
           component={Link}
-          to="/categories/create"
+          to="/videos/create"
         >
           <AddIcon />
         </Fab>
@@ -27,4 +27,4 @@ const CategoryList: React.FC = () => {
   );
 };
 
-export default CategoryList;
+export default VideoList;
