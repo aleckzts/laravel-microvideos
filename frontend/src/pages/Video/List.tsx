@@ -4,7 +4,7 @@ import { Box, Fab } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 
 import Page from '../../components/Page';
-import CategoryTable from './Table';
+import VideoTable from './Table';
 
 const VideoList: React.FC = () => {
   return (
@@ -21,7 +21,7 @@ const VideoList: React.FC = () => {
         </Fab>
       </Box>
       <Box>
-        <CategoryTable />
+        <VideoTable />
       </Box>
     </Page>
   );

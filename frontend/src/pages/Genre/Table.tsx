@@ -15,11 +15,7 @@ import useFilter from '../../hooks/useFilter';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import Yup from '../../yupBR';
 import CategoryApi from '../../services/CategoryApi';
-// import { CategoryType } from '../Category/Form';
-
-type categoryInterface = {
-  name: string;
-};
+import { CategoryType } from '../Category/Form';
 
 const columnsDefinition: TableColumn[] = [
   {
@@ -62,7 +58,7 @@ const columnsDefinition: TableColumn[] = [
         names: [],
       },
       customBodyRender(value: unknown) {
-        const categories = value as Array<categoryInterface>;
+        const categories = value as Array<CategoryType>;
         return (
           <span>{categories.map(category => category.name).join(', ')}</span>
         );

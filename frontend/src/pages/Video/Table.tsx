@@ -6,42 +6,62 @@ import { IconButton } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import EditIcon from '@material-ui/icons/Edit';
 import { useSnackbar } from 'notistack';
-import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
 import Table, { TableColumn, TableComponent } from '../../components/Table';
-import { CategoryType } from '../Category/Form';
-import CategoryApi from '../../services/CategoryApi';
+import VideoApi from '../../services/VideoApi';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import useFilter from '../../hooks/useFilter';
+import { VideoType } from './Form';
+import { CategoryType } from '../Category/Form';
+import { GenreType } from '../Genre/Form';
 
 const columnsDefinition: TableColumn[] = [
   {
     name: 'id',
     label: 'ID',
-    width: '30%',
+    width: '20%',
     options: {
       sort: false,
       filter: false,
     },
   },
   {
-    name: 'name',
-    label: 'Nome',
-    width: '43%',
+    name: 'title',
+    label: 'Título',
+    width: '33%',
     options: {
       filter: false,
     },
   },
   {
-    name: 'is_active',
-    label: 'Ativo',
-    width: '4%',
+    name: 'genres',
+    label: 'Gêneros',
+    width: '12%',
     options: {
+      filterType: 'multiselect',
       filterOptions: {
-        names: ['Sim', 'Não'],
+        names: [],
       },
-      customBodyRender(value) {
-        return value ? <BadgeYes /> : <BadgeNo />;
+      customBodyRender(value: unknown) {
+        const genres = value as Array<GenreType>;
+        return <span>{genres.map(genre => genre.name).join(', ')}</span>;
+      },
+    },
+  },
+  {
+    name: 'categories',
+    label: 'Categorias',
+    width: '12%',
+    options: {
+      filterType: 'multiselect',
+      filterOptions: {
+        names: [],
+      },
+      customBodyRender(value: unknown) {
+        const categories = value as Array<CategoryType>;
+        return (
+          <span>{categories.map(category => category.name).join(', ')}</span>
+        );
       },
     },
   },
@@ -79,10 +99,10 @@ const columnsDefinition: TableColumn[] = [
   },
 ];
 
-const CategoryTable: React.FC = () => {
+const VideoTable: React.FC = () => {
   const snackbar = useSnackbar();
   const isCancelled = useRef(false);
-  const [data, setData] = useState<CategoryType[]>([]);
+  const [data, setData] = useState<VideoType[]>([]);
   const [loading, setLoading] = useState(false);
   const debounceTime = 300;
   const rowsPerPage = 15;
@@ -110,7 +130,7 @@ const CategoryTable: React.FC = () => {
     async function getData(): Promise<void> {
       setLoading(true);
       try {
-        const response = await CategoryApi.list({
+        const response = await VideoApi.list({
           queryParams: {
             search: filterManager.cleanSearchText(debouncedFilterState.search),
             page: debouncedFilterState.pagination.page,
@@ -125,7 +145,7 @@ const CategoryTable: React.FC = () => {
         }
       } catch (err) {
         console.log(err);
-        if (CategoryApi.isRequestCancelled(err)) {
+        if (VideoApi.isRequestCancelled(err)) {
           return;
         }
         snackbar.enqueueSnackbar('Não foi possível carregar as informações', {
@@ -178,4 +198,4 @@ const CategoryTable: React.FC = () => {
   );
 };
 
-export default CategoryTable;
+export default VideoTable;
