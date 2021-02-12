@@ -6,6 +6,7 @@ use App\ModelFilters\GenreFilter;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Category;
 
 class Genre extends Model
 {

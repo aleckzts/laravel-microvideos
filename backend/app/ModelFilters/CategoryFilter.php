@@ -2,6 +2,7 @@
 
 namespace App\ModelFilters;
 
+use Illuminate\Database\Eloquent\Builder;
 use App\ModelFilters\DefaultModelFilter;
 
 class CategoryFilter extends DefaultModelFilter
