@@ -172,6 +172,7 @@ const VideoForm: React.FC = () => {
       getVideo();
     }
   }, [reset, id, snackbar]);
+  console.log(video);
 
   return (
     <DefaultForm onSubmit={handleSubmit(onSubmit)} GridItemProps={{ xs: 12 }}>

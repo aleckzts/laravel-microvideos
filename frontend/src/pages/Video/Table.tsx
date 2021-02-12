@@ -145,11 +145,11 @@ const VideoTable: React.FC = () => {
       formatSearchParams: debouncedState => {
         return debouncedState.extraFilter
           ? {
-              ...(debouncedState.extraFilter.categories && {
-                categories: debouncedState.extraFilter.categories.join(','),
-              }),
               ...(debouncedState.extraFilter.genres && {
                 genres: debouncedState.extraFilter.genres.join(','),
+              }),
+              ...(debouncedState.extraFilter.categories && {
+                categories: debouncedState.extraFilter.categories.join(','),
               }),
             }
           : undefined;
@@ -196,15 +196,16 @@ const VideoTable: React.FC = () => {
         });
         if (!isCancelled.current) {
           (columnGenres.options as any).filterOptions.names = response.data.data.map(
-            category => category.name,
+            genre => genre.name,
           );
+          console.log('teste', columnGenres.options?.filterOptions?.names);
         }
       } catch (err) {
         console.log(err);
         if (GenreApi.isRequestCancelled(err)) {
           return;
         }
-        snackbar.enqueueSnackbar('Não foi possível carregar od gêneros', {
+        snackbar.enqueueSnackbar('Não foi possível carregar os gêneros', {
           variant: 'error',
         });
       } finally {
@@ -217,6 +218,8 @@ const VideoTable: React.FC = () => {
       isCancelled.current = true;
     };
   }, [snackbar, columnGenres.options]);
+  console.log(columnGenres.options?.filterOptions?.names);
+  console.log(columnCategories.options?.filterOptions?.names);
 
   useEffect(() => {
     isCancelled.current = false;
