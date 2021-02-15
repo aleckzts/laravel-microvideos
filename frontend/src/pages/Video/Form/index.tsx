@@ -195,7 +195,11 @@ const VideoForm: React.FC = () => {
     try {
       const http = !video
         ? VideoApi.create(sendData)
-        : VideoApi.update(video.id, sendData);
+        : VideoApi.update(
+            video.id,
+            { ...sendData, _method: 'PUT' },
+            { http: { usePost: true } },
+          );
       console.log(http);
       const response = await http;
       console.log(response);
