@@ -22,7 +22,7 @@ const columnsDefinition: TableColumn[] = [
   {
     name: 'id',
     label: 'ID',
-    width: '20%',
+    width: '30%',
     options: {
       sort: false,
       filter: false,
@@ -31,7 +31,7 @@ const columnsDefinition: TableColumn[] = [
   {
     name: 'title',
     label: 'Título',
-    width: '33%',
+    width: '20%',
     options: {
       filter: false,
     },
@@ -39,8 +39,9 @@ const columnsDefinition: TableColumn[] = [
   {
     name: 'genres',
     label: 'Gêneros',
-    width: '12%',
+    width: '13%',
     options: {
+      sort: false,
       filterType: 'multiselect',
       filterOptions: {
         names: [],
@@ -54,8 +55,9 @@ const columnsDefinition: TableColumn[] = [
   {
     name: 'categories',
     label: 'Categorias',
-    width: '12%',
+    width: '13%',
     options: {
+      sort: false,
       filterType: 'multiselect',
       filterOptions: {
         names: [],
@@ -198,7 +200,6 @@ const VideoTable: React.FC = () => {
           (columnGenres.options as any).filterOptions.names = response.data.data.map(
             genre => genre.name,
           );
-          console.log('teste', columnGenres.options?.filterOptions?.names);
         }
       } catch (err) {
         console.log(err);
@@ -218,8 +219,6 @@ const VideoTable: React.FC = () => {
       isCancelled.current = true;
     };
   }, [snackbar, columnGenres.options]);
-  console.log(columnGenres.options?.filterOptions?.names);
-  console.log(columnCategories.options?.filterOptions?.names);
 
   useEffect(() => {
     isCancelled.current = false;

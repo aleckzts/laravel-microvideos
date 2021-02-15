@@ -5,10 +5,13 @@ const getGenresFromCategory = (
   genres: GenreType[],
   category: CategoryType,
 ): GenreType[] => {
-  return genres.filter(
-    genre =>
-      genre.categories.filter(cat => cat.id === category.id).length !== 0,
-  );
+  return genres
+    ? genres.filter(genre =>
+        genre.categories
+          ? genre.categories.filter(cat => cat.id === category.id).length !== 0
+          : null,
+      )
+    : [];
 };
 
 export default getGenresFromCategory;

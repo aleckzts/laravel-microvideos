@@ -9,7 +9,6 @@ const useHttpHandled = (): any => {
       const response = await request;
       return response.data.data;
     } catch (err) {
-      console.log(err);
       if (axios.isCancel(err)) {
         return [];
       }
