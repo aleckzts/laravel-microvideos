@@ -4,7 +4,6 @@ import axios, {
   AxiosResponse,
   CancelTokenSource,
 } from 'axios';
-import { omit } from 'lodash';
 import { serialize } from 'object-to-formdata';
 
 interface MetaDataType {

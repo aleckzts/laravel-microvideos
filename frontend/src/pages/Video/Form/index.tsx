@@ -22,7 +22,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
-import { isNullishCoalesce } from 'typescript';
 import { omit, zipObject } from 'lodash';
 import Yup from '../../../yupBR';
 import SubmitActions from '../../../components/SubmitActions';
@@ -33,10 +32,11 @@ import { CategoryType } from '../../Category/Form';
 import { CastMemberType } from '../../CastMember/Form';
 import RatingField from './RatingField';
 import UploadField from './UploadField';
-import GenreField from './GenreField';
-import CategoryField from './CategoryField';
+import GenreField, { GenreFieldComponent } from './GenreField';
+import CategoryField, { CategoryFieldComponent } from './CategoryField';
 import CastMemberField, { CastMemberFieldComponent } from './CastMemberField';
 import { InputFileComponent } from '../../../components/InputFile';
+import useSnackbarFormError from '../../../hooks/useSnackbarFormError';
 
 export interface PageParams {
   id: string;
@@ -125,8 +125,8 @@ const VideoForm: React.FC = () => {
   const [video, setVideo] = useState<VideoType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // const genreRef = useRef() as MutableRefObject<GenreFieldComponent>;
-  // const categoryRef = useRef() as MutableRefObject<CategoryFieldComponent>;
+  const genreRef = useRef() as MutableRefObject<GenreFieldComponent>;
+  const categoryRef = useRef() as MutableRefObject<CategoryFieldComponent>;
   const castMemberRef = useRef() as MutableRefObject<CastMemberFieldComponent>;
   const fileFields = Object.keys(VideoFileFieldsMap);
 
@@ -148,6 +148,7 @@ const VideoForm: React.FC = () => {
     reset,
     watch,
     trigger,
+    formState,
   } = useForm<VideoType>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -167,12 +168,14 @@ const VideoForm: React.FC = () => {
     },
   });
 
+  useSnackbarFormError({ submitCount: formState.submitCount, errors });
+
   function resetForm(data: any): void {
     Object.keys(uploadsRef.current).forEach(field =>
       uploadsRef.current[field].current.clear(),
     );
-    // genreRef.current.clear();
-    // categoryRef.current.clear();
+    genreRef.current.clear();
+    categoryRef.current.clear();
     castMemberRef.current.clear();
     reset(data);
   }
@@ -336,6 +339,7 @@ const VideoForm: React.FC = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <GenreField
+                ref={genreRef}
                 genres={watch('genres')}
                 setGenres={value => {
                   setValue('genres', value, { shouldValidate: true });
@@ -350,6 +354,7 @@ const VideoForm: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <CategoryField
+                ref={categoryRef}
                 categories={watch('categories')}
                 setCategories={value => {
                   setValue('categories', value, { shouldValidate: true });
