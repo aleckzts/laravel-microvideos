@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Eloquent\Filterable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -85,6 +86,24 @@ abstract class BasicCrudController extends Controller
     {
         $deletedObj = $this->findOrFail($id);
         $deletedObj->delete();
+        return response()->noContent(); // 204
+    }
+
+    protected function validateIds(Request $request)
+    {
+        $model = $this->model();
+        $ids = explode(',', $request->get('ids'));
+        $validator = \Validator::make(
+            ['ids' => $ids],
+            ['ids' => 'required|exists:' . (new $model)->getTable() . ',id']
+        );
+        return $validator->validate();
+    }
+
+    public function destroyCollection(Request $request)
+    {
+        $data = $this->validateIds($request);
+        $this->model()::whereIn('id', $data['ids'])->delete();
         return response()->noContent(); // 204
     }
 
