@@ -17,6 +17,8 @@ import { GenreType } from '../Genre/Form';
 import Yup from '../../yupBR';
 import CategoryApi from '../../services/CategoryApi';
 import GenreApi from '../../services/GenreApi';
+import DeleteDialog from '../../components/DeleteDialog';
+import useDeleteCollection from '../../hooks/useDeleteCollection';
 
 const columnsDefinition: TableColumn[] = [
   {
@@ -113,6 +115,12 @@ const VideoTable: React.FC = () => {
   const rowsPerPage = 15;
   const rowsPerPageOptions = [15, 25, 50];
   const tableRef = useRef() as React.MutableRefObject<TableComponent>;
+  const {
+    openDeleteDialog,
+    setOpenDeleteDialog,
+    rowsToDelete,
+    setRowsToDelete,
+  } = useDeleteCollection();
 
   const {
     columns,
@@ -310,40 +318,71 @@ const VideoTable: React.FC = () => {
     setTotalRecords,
   ]);
 
-  return (
-    <Table
-      title="Listagem de Videos"
-      columns={columnsDefinition}
-      data={data}
-      loading={loading}
-      debounceWait={debounceTime}
-      ref={tableRef}
-      options={{
-        serverSide: true,
-        searchText: filterState.search as string,
-        page: filterState.pagination.page - 1,
-        rowsPerPage: filterState.pagination.per_page,
-        rowsPerPageOptions,
-        count: totalRecords,
-        onFilterChange: (column, filterList) => {
-          const columnIndex = columns.findIndex(c => c.name === column);
-          filterManager.ChangeExtraFilter({
-            [column as string]: filterList[columnIndex].length
-              ? filterList[columnIndex]
-              : null,
+  const deleteRows = (confirmed: boolean): void => {
+    if (!confirmed) {
+      setOpenDeleteDialog(false);
+    } else {
+      const ids = rowsToDelete.data
+        .map((value: any) => data[value.index].id)
+        .join(',');
+      VideoApi.deleteCollection({ ids })
+        .then(response => {
+          setOpenDeleteDialog(false);
+          snackbar.enqueueSnackbar('Video(s) removido(s) com sucesso', {
+            variant: 'success',
           });
-        },
-        customToolbar: () => (
-          <FilterResetButton handleClick={() => filterManager.resetFilter()} />
-        ),
-        onSearchChange: value => filterManager.ChangeSearch(value as string),
-        onChangePage: page => filterManager.ChangePage(page),
-        onChangeRowsPerPage: perPage =>
-          filterManager.ChangeRowsPerPage(perPage),
-        onColumnSortChange: (changedColumn: string, direction: string) =>
-          filterManager.ChangeColumnSort(changedColumn, direction),
-      }}
-    />
+        })
+        .catch(error => {
+          snackbar.enqueueSnackbar('Não foi possível excluir os registros', {
+            variant: 'error',
+          });
+        });
+    }
+  };
+
+  return (
+    <>
+      <DeleteDialog open={openDeleteDialog} handleClose={deleteRows} />
+      <Table
+        title="Listagem de Videos"
+        columns={columnsDefinition}
+        data={data}
+        loading={loading}
+        debounceWait={debounceTime}
+        ref={tableRef}
+        options={{
+          serverSide: true,
+          searchText: filterState.search as string,
+          page: filterState.pagination.page - 1,
+          rowsPerPage: filterState.pagination.per_page,
+          rowsPerPageOptions,
+          count: totalRecords,
+          onFilterChange: (column, filterList) => {
+            const columnIndex = columns.findIndex(c => c.name === column);
+            filterManager.ChangeExtraFilter({
+              [column as string]: filterList[columnIndex].length
+                ? filterList[columnIndex]
+                : null,
+            });
+          },
+          customToolbar: () => (
+            <FilterResetButton
+              handleClick={() => filterManager.resetFilter()}
+            />
+          ),
+          onSearchChange: value => filterManager.ChangeSearch(value as string),
+          onChangePage: page => filterManager.ChangePage(page),
+          onChangeRowsPerPage: perPage =>
+            filterManager.ChangeRowsPerPage(perPage),
+          onColumnSortChange: (changedColumn: string, direction: string) =>
+            filterManager.ChangeColumnSort(changedColumn, direction),
+          onRowsDelete: rowsDeleted => {
+            setRowsToDelete(rowsDeleted);
+            return false;
+          },
+        }}
+      />
+    </>
   );
 };
 

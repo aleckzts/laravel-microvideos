@@ -11,6 +11,7 @@ const useSnackbarFormError: React.FC<SnackbarFormErrorProps> = ({
   errors,
 }) => {
   const snackbar = useSnackbar();
+  console.log(submitCount, errors);
 
   useEffect(() => {
     const hasError = Object.keys(errors).length !== 0;

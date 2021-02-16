@@ -124,7 +124,6 @@ const AsyncAutocomplete = React.forwardRef<
       clear: () => {
         setSearchText('');
         setOptions([]);
-        console.log('clear', searchText, options);
       },
     }));
 

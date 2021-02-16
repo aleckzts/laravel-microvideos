@@ -78,6 +78,15 @@ class HttpResource<T> {
     return this.http.delete<T>(`${this.resource}/${id}`);
   }
 
+  deleteCollection(queryParams: any): Promise<AxiosResponse<T>> {
+    const config: AxiosRequestConfig = {};
+    if (queryParams) {
+      config.params = queryParams;
+    }
+
+    return this.http.delete<T>(`${this.resource}`, config);
+  }
+
   isRequestCancelled(error: any): boolean {
     return axios.isCancel(error);
   }
