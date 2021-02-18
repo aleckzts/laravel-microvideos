@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Checkbox, FormControlLabel, TextField } from '@material-ui/core';
 
 import { useForm } from 'react-hook-form';
@@ -11,6 +11,7 @@ import Yup from '../../yupBR';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
 import CategoryApi from '../../services/CategoryApi';
+import LoadingContext from '../../components/loading/LoadingContext';
 
 export interface PageParams {
   id: string;
@@ -32,7 +33,7 @@ const CategoryForm: React.FC = () => {
   const history = useHistory();
   const { id } = useParams<PageParams>();
   const [category, setCategory] = useState<CategoryType | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const loading = useContext(LoadingContext);
 
   const {
     register,
@@ -53,7 +54,6 @@ const CategoryForm: React.FC = () => {
   });
 
   async function onSubmit(formData: any, event: any): Promise<void> {
-    setLoading(true);
     try {
       const http = !category
         ? CategoryApi.create(formData)
@@ -76,8 +76,6 @@ const CategoryForm: React.FC = () => {
       snackbar.enqueueSnackbar('Erro ao salvar categoria', {
         variant: 'error',
       });
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -87,7 +85,6 @@ const CategoryForm: React.FC = () => {
 
   useEffect(() => {
     async function getCategory(): Promise<void> {
-      setLoading(true);
       try {
         const response = await CategoryApi.get(id);
         setCategory(response.data.data);
@@ -97,8 +94,6 @@ const CategoryForm: React.FC = () => {
         snackbar.enqueueSnackbar('Não foi possível carregar as informações', {
           variant: 'error',
         });
-      } finally {
-        setLoading(false);
       }
     }
 

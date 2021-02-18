@@ -203,9 +203,7 @@ const VideoForm: React.FC = () => {
             { ...sendData, _method: 'PUT' },
             { http: { usePost: true } },
           );
-      console.log(http);
       const response = await http;
-      console.log(response);
       snackbar.enqueueSnackbar('Video salvo com sucesso', {
         variant: 'success',
       });

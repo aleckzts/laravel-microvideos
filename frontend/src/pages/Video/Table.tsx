@@ -327,12 +327,14 @@ const VideoTable: React.FC = () => {
         .join(',');
       VideoApi.deleteCollection({ ids })
         .then(response => {
+          filterManager.ChangePage(filterState.pagination.page - 1);
           setOpenDeleteDialog(false);
           snackbar.enqueueSnackbar('Video(s) removido(s) com sucesso', {
             variant: 'success',
           });
         })
-        .catch(error => {
+        .catch(err => {
+          console.log(err);
           snackbar.enqueueSnackbar('Não foi possível excluir os registros', {
             variant: 'error',
           });

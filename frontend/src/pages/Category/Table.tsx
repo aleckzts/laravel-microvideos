@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
@@ -13,6 +13,7 @@ import { CategoryType } from './Form';
 import CategoryApi from '../../services/CategoryApi';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import useFilter from '../../hooks/useFilter';
+import LoadingContext from '../../components/loading/LoadingContext';
 
 const columnsDefinition: TableColumn[] = [
   {
@@ -83,7 +84,7 @@ const CategoryTable: React.FC = () => {
   const snackbar = useSnackbar();
   const isCancelled = useRef(false);
   const [data, setData] = useState<CategoryType[]>([]);
-  const [loading, setLoading] = useState(false);
+  const loading = useContext(LoadingContext);
   const debounceTime = 300;
   const rowsPerPage = 15;
   const rowsPerPageOptions = [15, 25, 50];
@@ -108,7 +109,6 @@ const CategoryTable: React.FC = () => {
     filterManager.pushHistory();
 
     async function getData(): Promise<void> {
-      setLoading(true);
       try {
         const response = await CategoryApi.list({
           queryParams: {
@@ -131,8 +131,6 @@ const CategoryTable: React.FC = () => {
         snackbar.enqueueSnackbar('Não foi possível carregar as informações', {
           variant: 'error',
         });
-      } finally {
-        setLoading(false);
       }
     }
 

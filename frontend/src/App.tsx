@@ -10,20 +10,25 @@ import Navbar from './components/Navbar';
 import Breadcrumbs from './components/Breadcrumbs';
 
 import theme from './theme';
+import Spinner from './components/Spinner';
+import LoadingProvider from './components/loading/LoadingProvider';
 
 const App: React.FC = () => {
   return (
     <MuiThemeProvider theme={theme}>
-      <MySnackbarProvider>
-        <CssBaseline />
-        <BrowserRouter>
-          <Navbar />
-          <Box paddingTop="70px">
-            <Breadcrumbs />
-            <AppRouter />
-          </Box>
-        </BrowserRouter>
-      </MySnackbarProvider>
+      <LoadingProvider>
+        <MySnackbarProvider>
+          <CssBaseline />
+          <BrowserRouter>
+            <Spinner />
+            <Navbar />
+            <Box paddingTop="70px">
+              <Breadcrumbs />
+              <AppRouter />
+            </Box>
+          </BrowserRouter>
+        </MySnackbarProvider>
+      </LoadingProvider>
     </MuiThemeProvider>
   );
 };
